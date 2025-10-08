@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<style>
+    <style>
         :root {
             --primary-color: #0d6efd;
             --danger-color: #dc3545;
@@ -206,6 +206,11 @@
         .member-item.dragging {
             opacity: 0.5;
             background-color: #e9ecef;
+        }
+
+        .member-item.drag-over {
+            background-color: #e3f2fd;
+            border: 1px dashed #2196f3;
         }
 
         .member-left {
@@ -583,11 +588,6 @@
                     <h1 class="display-6 fw-bold text-primary">队伍选人系统</h1>
                 </div>
 
-                <!-- 第二行：详细解释 -->
-                <!-- <div class="text-center mb-3">
-                    <p class="text-muted fs-6">拖动选人模式·28名选手·7支队伍·每队5人</p>
-                </div> -->
-
                 <!-- 第三行：操作提示 -->
                 <div class="operation-tip">
                     <div class="d-flex align-items-start">
@@ -595,11 +595,12 @@
                             <strong>使用说明：</strong>
                             <ol class="tip-list">
                                 <li><strong>选人操作：</strong>从下方选手池拖动选手到上方队伍中，每队最多5人且位置不能重复</li>
+                                <li><strong>跨队移动：</strong>可在队伍间拖动选手，若目标队伍有相同位置选手则交换，否则插入到指定位置</li>
                                 <li><strong>队长机制：</strong>只有等级为"队长"的选手才会显示队长标识，每队最多一个队长</li>
                                 <li><strong>选手管理：</strong>选手被选中后会从选手池移除，确保每个选手只能加入一个队伍</li>
                                 <li><strong>等级系统：</strong>每位选手有等级标识（队长/SSR/SR/R），可使用"改级"按钮调整</li>
                                 <li><strong>队伍管理：</strong>可添加/移除队伍，点击队伍名称可修改，使用"一键清空"重置所有队伍</li>
-                                <li><strong>选手移动：</strong>在队伍内可拖动选手调整位置</li>
+                                <li><strong>选手移动：</strong>在队伍内可拖动选手调整位置，也可跨队伍拖动</li>
                                 <li><strong>数据保存：</strong>使用"导入/导出"功能保存和恢复当前配置</li>
                                 <li><strong>名称显示：</strong>选手名称过长时（超过3个汉字或7个英文字符）会自动换行显示</li>
                                 <li><strong>一键阵容：</strong>点击"一键生成阵容"按钮可自动为所有队伍分配选手</li>
@@ -959,7 +960,8 @@
                             id: this.dataset.playerId,
                             name: this.dataset.playerName,
                             position: this.dataset.playerPosition,
-                            level: this.dataset.playerLevel
+                            level: this.dataset.playerLevel,
+                            type: 'player-pool'
                         }));
                     });
 
@@ -989,412 +991,339 @@
                         const teamId = parseInt(this.dataset.teamId);
                         const team = teams.find(t => t.id === teamId);
 
-                        // 检查选手是否已经在其他队伍中
-                        if (isPlayerInAnyTeam(parseInt(playerData.id))) {
-                            alert('该选手已被其他队伍选中！');
-                            return;
-                        }
-
-                        // 检查是否已经存在相同位置的选手
-                        const hasSamePosition = team.members.some(member => member.position === playerData.position);
-                        if (hasSamePosition) {
-                            alert(`该队伍已有${playerData.position}位置的选手！`);
-                            return;
-                        }
-
-                        // 检查是否已经有其他队伍使用相同选手名称
-                        if (isPlayerNameInOtherTeam(playerData.name, teamId)) {
-                            alert(`选手"${playerData.name}"已被其他队伍选中！`);
-                            return;
-                        }
-
-                        // 检查是否要添加队长，且队伍中是否已有队长
-                        if (playerData.level === "队长" && hasCaptain(team)) {
-                            alert('该队伍已有一名队长，无法再添加队长！');
-                            return;
-                        }
-
-                        if (team && team.members.length < 5) {
-                            team.members.push({
-                                id: parseInt(playerData.id),
-                                name: playerData.name,
-                                position: playerData.position,
-                                level: playerData.level
-                            });
-
-                            // 如果添加的是队长，自动更新队伍名称
-                            if (playerData.level === "队长") {
-                                team.name = playerData.name;
+                        // 处理从选手池拖拽过来的选手
+                        if (playerData.type === 'player-pool') {
+                            // 检查选手是否已经在其他队伍中
+                            if (isPlayerInAnyTeam(parseInt(playerData.id))) {
+                                alert('该选手已被其他队伍选中！');
+                                return;
                             }
 
-                            // 从选手池中移除该选手
-                            playersByPosition[playerData.position] = playersByPosition[playerData.position].filter(p => p.id !== parseInt(playerData.id));
-                            renderTeams();
-                            renderPlayerPool();
+                            // 检查是否已经存在相同位置的选手
+                            const hasSamePosition = team.members.some(member => member.position === playerData.position);
+                            if (hasSamePosition) {
+                                alert(`该队伍已有${playerData.position}位置的选手！`);
+                                return;
+                            }
+
+                            // 检查是否已经有其他队伍使用相同选手名称
+                            if (isPlayerNameInOtherTeam(playerData.name, teamId)) {
+                                alert(`选手"${playerData.name}"已被其他队伍选中！`);
+                                return;
+                            }
+
+                            // 检查是否要添加队长，且队伍中是否已有队长
+                            if (playerData.level === "队长" && hasCaptain(team)) {
+                                alert('该队伍已有一名队长，无法再添加队长！');
+                                return;
+                            }
+
+                            if (team && team.members.length < 5) {
+                                // 从选手池中移除该选手
+                                const positionPlayers = playersByPosition[playerData.position];
+                                const playerIndex = positionPlayers.findIndex(p => p.id === parseInt(playerData.id));
+                                if (playerIndex !== -1) {
+                                    positionPlayers.splice(playerIndex, 1);
+                                }
+
+                                // 添加到队伍中
+                                team.members.push({
+                                    id: parseInt(playerData.id),
+                                    name: playerData.name,
+                                    position: playerData.position,
+                                    level: playerData.level
+                                });
+
+                                renderTeams();
+                                renderPlayerPool();
+                            }
                         }
                     });
                 });
             }
 
-            // 绑定队伍内选手拖拽事件
+            // 绑定队伍成员拖拽事件
             function bindMemberDragEvents() {
-                document.querySelectorAll('.team-card .member-item').forEach(item => {
-                    item.addEventListener('dragstart', function (e) {
-                        this.classList.add('dragging');
-                        const teamId = parseInt(this.closest('.team-card').dataset.teamId);
+                document.querySelectorAll('.member-item').forEach(memberItem => {
+                    memberItem.addEventListener('dragstart', function (e) {
+                        const teamCard = this.closest('.team-card');
+                        const teamId = parseInt(teamCard.dataset.teamId);
                         const memberIndex = parseInt(this.dataset.memberIndex);
-                        e.dataTransfer.setData('text/plain', JSON.stringify({
-                            teamId: teamId,
-                            memberIndex: memberIndex,
-                            type: 'move' // 标记为内部移动
-                        }));
+                        const team = teams.find(t => t.id === teamId);
+                        const member = team.members[memberIndex];
+
+                        if (member) {
+                            this.classList.add('dragging');
+                            e.dataTransfer.setData('text/plain', JSON.stringify({
+                                teamId: teamId,
+                                memberIndex: memberIndex,
+                                member: member,
+                                type: 'team-member'
+                            }));
+                        }
                     });
 
-                    item.addEventListener('dragend', function () {
+                    memberItem.addEventListener('dragend', function () {
                         this.classList.remove('dragging');
                     });
-                });
 
-                document.querySelectorAll('.team-card .member-item').forEach(item => {
-                    item.addEventListener('dragover', function (e) {
+                    memberItem.addEventListener('dragover', function (e) {
                         e.preventDefault();
+                        this.classList.add('drag-over');
                     });
 
-                    item.addEventListener('drop', function (e) {
+                    memberItem.addEventListener('dragleave', function () {
+                        this.classList.remove('drag-over');
+                    });
+
+                    memberItem.addEventListener('drop', function (e) {
                         e.preventDefault();
-                        const sourceData = JSON.parse(e.dataTransfer.getData('text/plain'));
+                        this.classList.remove('drag-over');
 
-                        // 如果是内部移动，不进行满员检查
-                        if (sourceData.type === 'move') {
-                            const sourceTeamId = sourceData.teamId;
-                            const sourceMemberIndex = sourceData.memberIndex;
+                        const dragData = JSON.parse(e.dataTransfer.getData('text/plain'));
+                        if (dragData.type === 'team-member') {
+                            const sourceTeamId = dragData.teamId;
+                            const sourceMemberIndex = dragData.memberIndex;
+                            const sourceMember = dragData.member;
 
-                            const targetTeamId = parseInt(this.closest('.team-card').dataset.teamId);
+                            const targetTeamCard = this.closest('.team-card');
+                            const targetTeamId = parseInt(targetTeamCard.dataset.teamId);
                             const targetMemberIndex = parseInt(this.dataset.memberIndex);
 
-                            if (sourceTeamId === targetTeamId) {
-                                // 同一队伍内移动
-                                const team = teams.find(t => t.id === sourceTeamId);
-                                if (team) {
-                                    const [movedMember] = team.members.splice(sourceMemberIndex, 1);
-                                    team.members.splice(targetMemberIndex, 0, movedMember);
-                                    renderTeams();
-                                }
+                            // 如果是跨队伍移动
+                            if (sourceTeamId !== targetTeamId) {
+                                movePlayerBetweenTeams(sourceTeamId, sourceMemberIndex, targetTeamId, targetMemberIndex);
+                            } else {
+                                // 同队伍内移动
+                                movePlayerWithinTeam(sourceTeamId, sourceMemberIndex, targetMemberIndex);
                             }
                         }
                     });
                 });
+            }
+
+            // 跨队伍移动选手
+            function movePlayerBetweenTeams(sourceTeamId, sourceMemberIndex, targetTeamId, targetMemberIndex) {
+                const sourceTeam = teams.find(t => t.id === sourceTeamId);
+                const targetTeam = teams.find(t => t.id === targetTeamId);
+                const sourceMember = sourceTeam.members[sourceMemberIndex];
+
+                if (!sourceMember) return;
+
+                // 检查目标队伍是否有相同位置的选手
+                const targetSamePositionIndex = targetTeam.members.findIndex(member => 
+                    member && member.position === sourceMember.position
+                );
+
+                if (targetSamePositionIndex !== -1) {
+                    // 交换选手
+                    const targetMember = targetTeam.members[targetSamePositionIndex];
+                    
+                    // 检查队长限制
+                    if ((sourceMember.level === "队长" && hasCaptain(targetTeam) && targetMember.level !== "队长") ||
+                        (targetMember.level === "队长" && hasCaptain(sourceTeam) && sourceMember.level !== "队长")) {
+                        alert('交换会导致队伍中有多个队长，无法完成交换！');
+                        return;
+                    }
+
+                    // 执行交换
+                    sourceTeam.members[sourceMemberIndex] = targetMember;
+                    targetTeam.members[targetSamePositionIndex] = sourceMember;
+                } else {
+                    // 检查目标队伍是否已有队长
+                    if (sourceMember.level === "队长" && hasCaptain(targetTeam)) {
+                        alert('目标队伍已有一名队长，无法添加队长！');
+                        return;
+                    }
+
+                    // 检查目标队伍是否已满
+                    if (targetTeam.members.length >= 5) {
+                        alert('目标队伍已满员！');
+                        return;
+                    }
+
+                    // 插入到指定位置
+                    sourceTeam.members.splice(sourceMemberIndex, 1);
+                    targetTeam.members.splice(targetMemberIndex, 0, sourceMember);
+                }
+
+                renderTeams();
+                renderPlayerPool();
+            }
+
+            // 同队伍内移动选手
+            function movePlayerWithinTeam(teamId, sourceIndex, targetIndex) {
+                const team = teams.find(t => t.id === teamId);
+                if (sourceIndex === targetIndex) return;
+
+                const [movedMember] = team.members.splice(sourceIndex, 1);
+                team.members.splice(targetIndex, 0, movedMember);
+
+                renderTeams();
             }
 
             // 从队伍中移除选手
-            window.removeFromTeam = function (teamId, memberIndex) {
+            function removeFromTeam(teamId, memberIndex) {
                 const team = teams.find(t => t.id === teamId);
                 if (team && team.members[memberIndex]) {
-                    const member = team.members[memberIndex];
+                    const removedMember = team.members[memberIndex];
+                    
                     // 将选手放回选手池
-                    if (playersByPosition[member.position]) {
-                        playersByPosition[member.position].push(member);
-                    }
+                    playersByPosition[removedMember.position].push(removedMember);
+                    
+                    // 从队伍中移除
                     team.members.splice(memberIndex, 1);
+                    
                     renderTeams();
                     renderPlayerPool();
                 }
             }
 
             // 设置选手为队长
-            window.setAsCaptain = function (teamId, memberIndex) {
+            function setAsCaptain(teamId, memberIndex) {
                 const team = teams.find(t => t.id === teamId);
                 if (team && team.members[memberIndex]) {
-                    const member = team.members[memberIndex];
-                    member.level = "队长";
-                    team.name = member.name;
+                    // 检查是否已有队长
+                    if (hasCaptain(team)) {
+                        alert('该队伍已有一名队长！');
+                        return;
+                    }
+                    
+                    team.members[memberIndex].level = "队长";
                     renderTeams();
                 }
             }
 
-            // 移除选手
-            window.removePlayer = function (position, playerId) {
-                //if (confirm('确定要移除这名选手吗？')) {
-                    playersByPosition[position] = playersByPosition[position].filter(p => p.id !== playerId);
-                    renderPlayerPool();
-                //}
+            // 更新队伍名称
+            function updateTeamName(teamId, newName) {
+                const team = teams.find(t => t.id === teamId);
+                if (team) {
+                    team.name = newName || team.name;
+                    renderTeams();
+                }
             }
 
-            // 添加新选手
-            window.addNewPlayer = function (position) {
-                const name = prompt('请输入选手名称：');
-                if (name && name.trim()) {
-                    const level = prompt('请输入选手等级（队长/SSR/SR/R）：', 'R');
-                    if (level && ['队长', 'SSR', 'SR', 'R'].includes(level)) {
-                        playersByPosition[position].push({
-                            id: nextPlayerId++,
-                            name: name.trim(),
-                            position: position,
-                            level: level
-                        });
-                        renderPlayerPool();
-                    } else {
-                        alert('请输入有效的等级（队长/SSR/SR/R）');
-                    }
+            // 移除队伍
+            function removeTeam(teamId) {
+                if (teams.length <= 1) {
+                    alert('至少需要保留一个队伍！');
+                    return;
                 }
-            };
 
-            // 修改选手名称
-            window.renamePlayer = function (position, playerId) {
-                const player = playersByPosition[position].find(p => p.id === playerId);
-                if (player) {
-                    const newName = prompt('请输入新的选手名称：', player.name);
-                    if (newName && newName.trim()) {
-                        player.name = newName.trim();
-                        renderPlayerPool();
-                    }
-                }
-            };
-
-            // 修改选手等级
-            window.changeLevel = function (position, playerId) {
-                const player = playersByPosition[position].find(p => p.id === playerId);
-                if (player) {
-                    const newLevel = prompt('请输入新的选手等级（队长/SSR/SR/R）：', player.level);
-                    if (newLevel && ['队长', 'SSR', 'SR', 'R'].includes(newLevel)) {
-                        player.level = newLevel;
-                        renderPlayerPool();
-                    } else {
-                        alert('请输入有效的等级（队长/SSR/SR/R）');
-                    }
-                }
-            };
-
-            // 一键生成阵容
-            document.getElementById('generateTeamBtn').addEventListener('click', function () {
-                //if (confirm('确定要一键生成阵容吗？将在现有队伍基础上补充选手。')) {
-                    generateBalancedTeams();
-                //}
-            });
-
-            // 智能生成平衡阵容
-            function generateBalancedTeams() {
-                // 备份当前选手池
-                const originalPlayerPool = JSON.parse(JSON.stringify(playersByPosition));
-                
-                // 获取所有可用选手
-                const allAvailablePlayers = [];
-                Object.values(playersByPosition).forEach(players => {
-                    allAvailablePlayers.push(...players);
-                });
-
-                // 按等级分组可用选手
-                const availablePlayersByLevel = {
-                    '队长': allAvailablePlayers.filter(p => p.level === '队长'),
-                    'SSR': allAvailablePlayers.filter(p => p.level === 'SSR'),
-                    'SR': allAvailablePlayers.filter(p => p.level === 'SR'),
-                    'R': allAvailablePlayers.filter(p => p.level === 'R')
-                };
-
-                // 计算每个队伍需要的各等级选手数量
-                const teamCount = teams.length;
-                const levelDistribution = {};
-
-                // 计算每个等级的总选手数
-                Object.keys(availablePlayersByLevel).forEach(level => {
-                    const players = availablePlayersByLevel[level];
-                    if (players.length > 0) {
-                        // 计算每个队伍应该分配的数量
-                        const perTeam = Math.floor(players.length / teamCount);
-                        levelDistribution[level] = perTeam;
-                    }
-                });
-
-                // 为每个队伍分配选手
-                teams.forEach(team => {
-                    const positions = ['上单', '打野', '中单', '射手', '辅助'];
-                    const assignedPositions = new Set();
+                const teamIndex = teams.findIndex(t => t.id === teamId);
+                if (teamIndex !== -1) {
+                    const team = teams[teamIndex];
                     
-                    // 获取队伍已有的位置和等级
+                    // 将队伍中的选手放回选手池
                     team.members.forEach(member => {
-                        assignedPositions.add(member.position);
+                        playersByPosition[member.position].push(member);
                     });
-
-                    // 先分配队长（如果有且队伍没有队长）
-                    if (availablePlayersByLevel['队长'].length > 0 && !hasCaptain(team)) {
-                        const captainPlayers = availablePlayersByLevel['队长'].filter(p =>
-                            !isPlayerInAnyTeam(p.id) && !assignedPositions.has(p.position)
-                        );
-                        if (captainPlayers.length > 0) {
-                            const randomCaptain = captainPlayers[Math.floor(Math.random() * captainPlayers.length)];
-                            team.members.push(randomCaptain);
-                            assignedPositions.add(randomCaptain.position);
-                            // 从选手池移除
-                            playersByPosition[randomCaptain.position] = playersByPosition[randomCaptain.position].filter(p => p.id !== randomCaptain.id);
-                            // 设置队伍名称为队长名称
-                            team.name = randomCaptain.name;
-                        }
-                    }
-
-                    // 分配其他等级的选手，优先分配高等级选手
-                    const levels = ['SSR', 'SR', 'R'];
-                    levels.forEach(level => {
-                        if (availablePlayersByLevel[level] && availablePlayersByLevel[level].length > 0) {
-                            const count = levelDistribution[level] || 1;
-                            for (let i = 0; i < count && team.members.length < 5; i++) {
-                                const availablePlayers = availablePlayersByLevel[level].filter(p =>
-                                    !isPlayerInAnyTeam(p.id) &&
-                                    !assignedPositions.has(p.position) &&
-                                    playersByPosition[p.position].includes(p)
-                                );
-
-                                if (availablePlayers.length > 0) {
-                                    const randomPlayer = availablePlayers[Math.floor(Math.random() * availablePlayers.length)];
-                                    team.members.push(randomPlayer);
-                                    assignedPositions.add(randomPlayer.position);
-                                    // 从选手池移除
-                                    playersByPosition[randomPlayer.position] = playersByPosition[randomPlayer.position].filter(p => p.id !== randomPlayer.id);
-                                }
-                            }
-                        }
-                    });
-
-                    // 填充剩余位置
-                    while (team.members.length < 5) {
-                        const availablePositions = positions.filter(p => !assignedPositions.has(p));
-                        if (availablePositions.length === 0) break;
-
-                        const randomPosition = availablePositions[Math.floor(Math.random() * availablePositions.length)];
-                        const availablePlayers = playersByPosition[randomPosition].filter(p =>
-                            !isPlayerInAnyTeam(p.id)
-                        );
-
-                        if (availablePlayers.length > 0) {
-                            const randomPlayer = availablePlayers[Math.floor(Math.random() * availablePlayers.length)];
-                            team.members.push(randomPlayer);
-                            assignedPositions.add(randomPosition);
-                            // 从选手池移除
-                            playersByPosition[randomPosition] = playersByPosition[randomPosition].filter(p => p.id !== randomPlayer.id);
-                        } else {
-                            assignedPositions.add(randomPosition); // 如果没有可用选手，标记该位置已尝试
-                        }
-                    }
-
-                    // 如果没有队长，设置队伍名称为第一个选手的名称
-                    if (!hasCaptain(team) && team.members.length > 0) {
-                        team.name = team.members[0].name;
-                    }
-
-                    // 按位置顺序排序（仅用于一键生成阵容）
-                    sortTeamMembersByPosition(team);
-                });
-
-                renderTeams();
-                renderPlayerPool();
-                //alert('一键阵容生成完成！');
+                    
+                    // 移除队伍
+                    teams.splice(teamIndex, 1);
+                    
+                    renderTeams();
+                    renderPlayerPool();
+                }
             }
 
             // 添加新队伍
             document.getElementById('addTeamBtn').addEventListener('click', function () {
-                if (teams.length >= 50) {
-                    alert('最多只能创建50支队伍！');
-                    return;
-                }
-
-                const teamName = prompt('请输入队伍名称：', `${nextTeamId}队`);
-                if (teamName && teamName.trim()) {
-                    teams.push({
-                        id: nextTeamId++,
-                        name: teamName.trim(),
-                        color: getRandomColor(),
-                        members: []
-                    });
-                    renderTeams();
-                }
+                const newTeam = {
+                    id: nextTeamId++,
+                    name: `${nextTeamId - 1}队`,
+                    color: getRandomColor(),
+                    members: []
+                };
+                teams.push(newTeam);
+                renderTeams();
             });
-
-            // 移除队伍
-            window.removeTeam = function (teamId) {
-                if (confirm('确定要移除这支队伍吗？队伍中的选手将返回选手池。')) {
-                    const team = teams.find(t => t.id === teamId);
-                    if (team) {
-                        // 将队伍中的选手放回选手池
-                        team.members.forEach(member => {
-                            if (playersByPosition[member.position]) {
-                                playersByPosition[member.position].push(member);
-                            }
-                        });
-
-                        teams = teams.filter(t => t.id !== teamId);
-                        renderTeams();
-                        renderPlayerPool();
-                    }
-                }
-            };
-
-            // 更新队伍名称
-            window.updateTeamName = function (teamId, newName) {
-                const team = teams.find(t => t.id === teamId);
-                if (team && newName && newName.trim()) {
-                    team.name = newName.trim();
-                    renderTeams();
-                }
-            };
 
             // 一键清空所有队伍
             document.getElementById('clearAllBtn').addEventListener('click', function () {
-                //if (confirm('确定要清空所有队伍吗？所有选手将返回选手池。')) {
+                if (confirm('确定要清空所有队伍吗？所有选手将回到选手池。')) {
                     teams.forEach(team => {
                         team.members.forEach(member => {
-                            if (playersByPosition[member.position]) {
-                                playersByPosition[member.position].push(member);
-                            }
+                            playersByPosition[member.position].push(member);
                         });
                         team.members = [];
                     });
                     renderTeams();
                     renderPlayerPool();
-                //}
+                }
             });
 
             // 恢复默认值
             document.getElementById('resetBtn').addEventListener('click', function () {
-                //if (confirm('确定要恢复默认值吗？当前所有数据将丢失。')) {
+                if (confirm('确定要恢复默认值吗？当前所有数据将丢失。')) {
                     teams = JSON.parse(JSON.stringify(defaultTeams));
                     playersByPosition = JSON.parse(JSON.stringify(defaultPlayersByPosition));
                     nextPlayerId = 36;
                     nextTeamId = 8;
                     renderTeams();
                     renderPlayerPool();
-                //}
-            });
-
-            // 导入阵容
-            document.getElementById('importBtn').addEventListener('click', function () {
-                document.getElementById('importFile').click();
-            });
-
-            document.getElementById('importFile').addEventListener('change', function (e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function (event) {
-                        try {
-                            const data = JSON.parse(event.target.result);
-                            importedData = data;
-
-                            // 更新数据
-                            teams = data.teams || JSON.parse(JSON.stringify(defaultTeams));
-                            playersByPosition = data.playersByPosition || JSON.parse(JSON.stringify(defaultPlayersByPosition));
-                            nextPlayerId = data.nextPlayerId || 36;
-                            nextTeamId = data.nextTeamId || 8;
-
-                            renderTeams();
-                            renderPlayerPool();
-                            //alert('阵容导入成功！');
-                        } catch (error) {
-                            alert('导入失败：文件格式不正确');
-                            console.error(error);
-                        }
-                    };
-                    reader.readAsText(file);
                 }
-                e.target.value = ''; // 重置文件输入
+            });
+
+            // 一键生成阵容
+            document.getElementById('generateTeamBtn').addEventListener('click', function () {
+                if (confirm('确定要一键生成阵容吗？当前队伍配置将被覆盖。')) {
+                    // 清空所有队伍
+                    teams.forEach(team => {
+                        team.members = [];
+                    });
+
+                    // 获取所有可用选手
+                    const allPlayers = [];
+                    Object.entries(playersByPosition).forEach(([position, players]) => {
+                        players.forEach(player => {
+                            allPlayers.push({ ...player });
+                        });
+                    });
+
+                    // 按等级排序（队长优先）
+                    allPlayers.sort((a, b) => {
+                        if (a.level === "队长" && b.level !== "队长") return -1;
+                        if (a.level !== "队长" && b.level === "队长") return 1;
+                        return 0;
+                    });
+
+                    // 为每个队伍分配选手
+                    teams.forEach(team => {
+                        const positionsNeeded = [...positionOrder];
+                        
+                        // 优先分配队长
+                        const captainIndex = allPlayers.findIndex(p => p.level === "队长");
+                        if (captainIndex !== -1) {
+                            const captain = allPlayers.splice(captainIndex, 1)[0];
+                            team.members.push(captain);
+                            const captainPosIndex = positionsNeeded.indexOf(captain.position);
+                            if (captainPosIndex !== -1) {
+                                positionsNeeded.splice(captainPosIndex, 1);
+                            }
+                        }
+
+                        // 分配其他位置
+                        positionsNeeded.forEach(position => {
+                            const playerIndex = allPlayers.findIndex(p => p.position === position);
+                            if (playerIndex !== -1) {
+                                const player = allPlayers.splice(playerIndex, 1)[0];
+                                team.members.push(player);
+                            }
+                        });
+
+                        // 按位置顺序排序
+                        sortTeamMembersByPosition(team);
+                    });
+
+                    // 清空选手池（所有选手都已分配到队伍）
+                    Object.keys(playersByPosition).forEach(position => {
+                        playersByPosition[position] = [];
+                    });
+
+                    renderTeams();
+                    renderPlayerPool();
+                }
             });
 
             // 导出阵容
@@ -1405,28 +1334,130 @@
                     nextPlayerId: nextPlayerId,
                     nextTeamId: nextTeamId
                 };
-
+                
                 const dataStr = JSON.stringify(data, null, 2);
                 const dataBlob = new Blob([dataStr], { type: 'application/json' });
-
-                const url = URL.createObjectURL(dataBlob);
+                
                 const link = document.createElement('a');
-                link.href = url;
-                link.download = 'teams-config.json';
+                link.href = URL.createObjectURL(dataBlob);
+                link.download = 'team-formation.json';
                 link.click();
-
-                URL.revokeObjectURL(url);
             });
+
+            // 导入阵容
+            document.getElementById('importBtn').addEventListener('click', function () {
+                document.getElementById('importFile').click();
+            });
+
+            document.getElementById('importFile').addEventListener('change', function (e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        
+                        // 验证数据结构
+                        if (data.teams && data.playersByPosition) {
+                            teams = data.teams;
+                            playersByPosition = data.playersByPosition;
+                            nextPlayerId = data.nextPlayerId || nextPlayerId;
+                            nextTeamId = data.nextTeamId || nextTeamId;
+                            
+                            importedData = data;
+                            
+                            renderTeams();
+                            renderPlayerPool();
+                            alert('阵容导入成功！');
+                        } else {
+                            alert('导入的文件格式不正确！');
+                        }
+                    } catch (error) {
+                        alert('导入失败：' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+                
+                // 清空文件输入，允许重复导入同一文件
+                e.target.value = '';
+            });
+
+            // 添加新选手
+            function addNewPlayer(position) {
+                const newName = prompt(`请输入新选手名称（${position}位置）：`);
+                if (newName) {
+                    const newPlayer = {
+                        id: nextPlayerId++,
+                        name: newName,
+                        position: position,
+                        level: "R"
+                    };
+                    
+                    playersByPosition[position].push(newPlayer);
+                    renderPlayerPool();
+                }
+            }
+
+            // 重命名选手
+            function renamePlayer(position, playerId) {
+                const player = playersByPosition[position].find(p => p.id === playerId);
+                if (player) {
+                    const newName = prompt('请输入新的选手名称：', player.name);
+                    if (newName) {
+                        player.name = newName;
+                        renderPlayerPool();
+                    }
+                }
+            }
+
+            // 更改选手等级
+            function changeLevel(position, playerId) {
+                const player = playersByPosition[position].find(p => p.id === playerId);
+                if (player) {
+                    const currentLevel = player.level;
+                    const newLevel = prompt('请输入新的等级（队长/SSR/SR/R）：', currentLevel);
+                    if (newLevel && ["队长", "SSR", "SR", "R"].includes(newLevel)) {
+                        player.level = newLevel;
+                        renderPlayerPool();
+                    } else if (newLevel) {
+                        alert('请输入有效的等级：队长、SSR、SR 或 R');
+                    }
+                }
+            }
+
+            // 移除选手
+            function removePlayer(position, playerId) {
+                if (confirm('确定要移除该选手吗？')) {
+                    const positionPlayers = playersByPosition[position];
+                    const playerIndex = positionPlayers.findIndex(p => p.id === playerId);
+                    if (playerIndex !== -1) {
+                        positionPlayers.splice(playerIndex, 1);
+                        renderPlayerPool();
+                    }
+                }
+            }
 
             // 生成随机颜色
             function getRandomColor() {
                 const colors = [
-                    '#dc3545', '#0d6efd', '#198754', '#fd7e14',
-                    '#6f42c1', '#20c997', '#e83e8c', '#ffc107',
-                    '#6c757d', '#0dcaf0'
+                    '#dc3545', '#0d6efd', '#198754', '#fd7e14', 
+                    '#6f42c1', '#20c997', '#e83e8c', '#ffc107'
                 ];
                 return colors[Math.floor(Math.random() * colors.length)];
             }
+
+            // 将函数暴露到全局作用域
+            window.removeFromTeam = removeFromTeam;
+            window.setAsCaptain = setAsCaptain;
+            window.updateTeamName = updateTeamName;
+            window.removeTeam = removeTeam;
+            window.addNewPlayer = addNewPlayer;
+            window.renamePlayer = renamePlayer;
+            window.changeLevel = changeLevel;
+            window.removePlayer = removePlayer;
+            window.movePlayerBetweenTeams = movePlayerBetweenTeams;
+            window.movePlayerWithinTeam = movePlayerWithinTeam;
 
             // 初始化渲染
             renderTeams();
@@ -1434,5 +1465,4 @@
         });
     </script>
 </body>
-
 </html>
