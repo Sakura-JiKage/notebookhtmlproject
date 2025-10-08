@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>队伍管理系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --danger-color: #dc3545;
+            --success-color: #198754;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        .main-content {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            flex: 1;
+            margin: 15px auto;
+            max-width: 1400px;
+            width: 95%;
+        }
+
+        .copyright {
+            background-color: #343a40;
+            color: white;
+            text-align: center;
+            padding: 15px 0;
+            width: 100%;
+            margin-top: auto;
+        }
+
+        .content-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 60px;
+        }
+
+        .operation-tip {
+            background-color: #e7f3ff;
+            border-left: 4px solid var(--primary-color);
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+
+        .tip-list {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .tip-list li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .import-export-area {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .team-area,
+        .player-pool-area {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 18px;
+            margin-bottom: 15px;
+        }
+
+        .teams-container {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+        }
+
+        @media (max-width: 1400px) {
+            .teams-container {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media (max-width: 992px) {
+            .teams-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .teams-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 576px) {
+            .teams-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .area-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .area-title {
+            display: flex;
+            align-items: center;
+        }
+
+        .area-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .team-card {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            min-height: 320px;
+        }
+
+        .team-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .team-info {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        .team-number {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background-color: #6f42c1;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 8px;
+            font-size: 0.85rem;
+        }
+
+        .team-name {
+            font-weight: bold;
+            color: #495057;
+            margin-right: 8px;
+            font-size: 1.0rem;
+        }
+
+        .team-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .team-members {
+            margin-top: 8px;
+        }
+
+        .member-item {
+            padding: 10px 8px;
+            border-bottom: 1px dashed #f1f3f4;
+            font-size: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            min-height: 65px;
+            transition: all 0.2s;
+            cursor: move;
+            position: relative;
+        }
+
+        .member-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .member-item.dragging {
+            opacity: 0.5;
+            background-color: #e9ecef;
+        }
+
+        .member-left {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            flex: 1;
+        }
+
+        .player-name-container {
+            margin-bottom: 6px;
+        }
+
+        .player-name-static {
+            font-weight: 500;
+            color: #212529;
+            font-size: 0.9rem;
+            line-height: 1.2;
+            font-weight: bold;
+            word-break: break-word;
+            white-space: normal;
+        }
+
+        .member-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+            position: relative;
+            height: 100%;
+        }
+
+        .position-and-level {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+            transition: opacity 0.2s;
+        }
+
+        .position-tag {
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-size: 0.6rem;
+            font-weight: 500;
+            color: white;
+            display: inline-block;
+        }
+
+        .player-level {
+            display: inline-block;
+            min-width: 24px;
+            height: 16px;
+            border-radius: 8px;
+            text-align: center;
+            line-height: 16px;
+            font-size: 0.6rem;
+            font-weight: bold;
+        }
+
+        .level-队长 {
+            background-color: #ffd700;
+            color: #8b6914;
+        }
+
+        .level-SSR {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .level-SR {
+            background-color: #fd7e14;
+            color: white;
+        }
+
+        .level-R {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .captain-badge {
+            background: linear-gradient(135deg, #ffd700, #ffa500);
+            color: #8b6914;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.65rem;
+            font-weight: bold;
+            margin-top: 4px;
+            transition: opacity 0.2s;
+        }
+
+        .member-item:hover .captain-badge {
+            opacity: 0;
+        }
+
+        .member-item:not(:hover) .captain-badge {
+            opacity: 1;
+        }
+
+        .member-item:last-child {
+            border-bottom: none;
+        }
+
+        .member-actions {
+            display: flex;
+            gap: 4px;
+            position: absolute;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .member-item:hover .member-actions {
+            opacity: 1;
+        }
+
+        .member-item:hover .position-and-level {
+            opacity: 0;
+        }
+
+        .btn-xs {
+            padding: 2px 6px;
+            font-size: 0.65rem;
+            border-radius: 8px;
+        }
+
+        .btn-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            border-radius: 4px;
+        }
+
+        .empty-slot {
+            color: #6c757d;
+            font-style: italic;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 65px;
+        }
+
+        /* 选手池5列布局 */
+        .positions-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+        }
+
+        @media (max-width: 1400px) {
+            .positions-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 992px) {
+            .positions-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 576px) {
+            .positions-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .position-column {
+            background: white;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: relative;
+            min-height: 200px;
+        }
+
+        /* 位置颜色定义 */
+        .position-top {
+            background: linear-gradient(135deg, #ff6b6b, #c0392b);
+        }
+
+        .position-jungle {
+            background: linear-gradient(135deg, #27ae60, #16a085);
+        }
+
+        .position-mid {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+        }
+
+        .position-adc {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+        }
+
+        .position-support {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+
+        .position-title {
+            padding: 8px 12px;
+            border-radius: 16px;
+            margin-bottom: 12px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: white;
+        }
+
+        .position-players {
+            min-height: 180px;
+        }
+
+        .position-players.empty {
+            min-height: 0;
+        }
+
+        .player-item {
+            background: white;
+            border-radius: 6px;
+            padding: 8px 10px;
+            margin-bottom: 6px;
+            cursor: grab;
+            transition: all 0.2s;
+            border: 1px solid #e9ecef;
+        }
+
+        .player-item:hover {
+            background: #f8f9fa;
+            transform: translateX(2px);
+        }
+
+        .player-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .player-name {
+            font-weight: 500;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            max-width: 100%;
+        }
+
+        .player-name-text {
+            max-width: 80px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: normal;
+            font-weight: bold;
+            word-break: break-word;
+            line-height: 1.2;
+        }
+
+        .player-level-pool {
+            display: inline-block;
+            min-width: 32px;
+            height: 20px;
+            border-radius: 10px;
+            text-align: center;
+            line-height: 20px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+
+        .player-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .add-player-btn {
+            width: 100%;
+            margin-top: 8px;
+            padding: 8px 12px;
+            font-size: 0.75rem;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, var(--success-color), #146c43);
+            border: none;
+            color: white;
+            border-radius: 6px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .add-player-btn:hover {
+            background: linear-gradient(135deg, #146c43, var(--success-color));
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .add-player-btn.no-players {
+            margin-top: 0;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+        }
+
+        .add-player-btn.dynamic-position {
+            position: relative;
+            margin-top: 0;
+            top: auto;
+            left: auto;
+            transform: none;
+            width: 100%;
+        }
+
+        .clear-btn {
+            background: linear-gradient(135deg, var(--danger-color), #c82333);
+            border: none;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #6c757d, #5a6268);
+            border: none;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: white;
+        }
+
+        .generate-btn {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            border: none;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: white;
+        }
+
+        .import-export-btn {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+
+        .add-team-btn {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+
+        .tooltip-inner {
+            font-size: 0.7rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 主要内容区域 -->
+    <div class="content-wrapper">
+        <div class="container my-3">
+            <div class="main-content">
+                <!-- 第一行：网页标题 -->
+                <div class="text-center mb-3">
+                    <h1 class="display-6 fw-bold text-primary">队伍选人系统</h1>
+                </div>
+
+                <!-- 第二行：详细解释 -->
+                <div class="text-center mb-3">
+                    <p class="text-muted fs-6">拖动选人模式·28名选手·7支队伍·每队5人</p>
+                </div>
+
+                <!-- 第三行：操作提示 -->
+                <div class="operation-tip">
+                    <div class="d-flex align-items-start">
+                        <span class="fw-medium" style="font-size: 0.9rem;">
+                            <strong>使用说明：</strong>
+                            <ol class="tip-list">
+                                <li><strong>选人操作：</strong>从下方选手池拖动选手到上方队伍中，每队最多5人且位置不能重复</li>
+                                <li><strong>队长机制：</strong>只有等级为"队长"的选手才会显示队长标识，每队最多一个队长</li>
+                                <li><strong>选手管理：</strong>选手被选中后会从选手池移除，确保每个选手只能加入一个队伍</li>
+                                <li><strong>等级系统：</strong>每位选手有等级标识（队长/SSR/SR/R），可使用"改级"按钮调整</li>
+                                <li><strong>队伍管理：</strong>可添加/移除队伍，点击队伍名称可修改，使用"一键清空"重置所有队伍</li>
+                                <li><strong>选手移动：</strong>在队伍内可拖动选手调整位置</li>
+                                <li><strong>数据保存：</strong>使用"导入/导出"功能保存和恢复当前配置</li>
+                                <li><strong>名称显示：</strong>选手名称过长时（超过3个汉字或7个英文字符）会自动换行显示</li>
+                                <li><strong>一键阵容：</strong>点击"一键生成阵容"按钮可自动为所有队伍分配选手</li>
+                                <li><strong>指定队长：</strong>队伍无队长时，可悬停选手点击"指定为队长"图标设置队长</li>
+                            </ol>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- 导入导出区域 -->
+                <div class="import-export-area">
+                    <button class="btn btn-success import-export-btn" id="importBtn">
+                        导入阵容
+                    </button>
+                    <button class="btn btn-primary import-export-btn" id="exportBtn">
+                        导出阵容
+                    </button>
+                    <input type="file" id="importFile" accept=".json" style="display: none;">
+                </div>
+
+                <!-- 队伍区域 -->
+                <div class="team-area">
+                    <div class="area-header">
+                        <div class="area-title">
+                            <h5 class="mb-0 fw-bold" style="font-size: 1rem;">🏆 队伍阵容（每队5人）</h5>
+                        </div>
+                        <div class="area-actions">
+                            <button class="btn btn-outline-success add-team-btn" id="addTeamBtn">
+                                ➕ 添加队伍
+                            </button>
+                            <button class="btn generate-btn" id="generateTeamBtn">
+                                ⚡ 一键生成阵容
+                            </button>
+                            <button class="btn btn-danger clear-btn" id="clearAllBtn">
+                                🗑️ 一键清空
+                            </button>
+                            <button class="btn reset-btn" id="resetBtn">
+                                🔄 恢复默认值
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 队伍列表 -->
+                    <div class="teams-container" id="teamsContainer">
+                        <div class="loading">正在加载队伍数据...</div>
+                    </div>
+                </div>
+
+                <!-- 选手池区域 -->
+                <div class="player-pool-area">
+                    <div class="area-header">
+                        <div class="area-title">
+                            <h5 class="mb-0 fw-bold" style="font-size: 1rem;">👥 选手池</h5>
+                        </div>
+                    </div>
+
+                    <!-- 5列选手布局 -->
+                    <div class="positions-container" id="positionsContainer">
+                        <div class="loading">正在加载选手数据...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部版权信息 -->
+    <div class="copyright">
+        <div class="container">
+            <p class="mb-0" style="font-size: 0.9rem;">Developed With DeepSeek、Bootstrap</p>
+        </div>
+    </div>
+
+    <script>
+        // 等待DOM完全加载
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('DOM loaded, initializing app...');
+
+            // 默认数据
+            const defaultTeams = [
+                { id: 1, name: "1队", color: "#dc3545", members: [] },
+                { id: 2, name: "2队", color: "#0d6efd", members: [] },
+                { id: 3, name: "3队", color: "#198754", members: [] },
+                { id: 4, name: "4队", color: "#fd7e14", members: [] },
+                { id: 5, name: "5队", color: "#6f42c1", members: [] },
+                { id: 6, name: "6队", color: "#20c997", members: [] },
+                { id: 7, name: "7队", color: "#e83e8c", members: [] }
+            ];
+
+            const defaultPlayersByPosition = {
+                "上单": [
+                    { id: 1, name: "小捏", position: "上单", level: "R" },
+                    { id: 2, name: "米勒", position: "上单", level: "R" },
+                    { id: 3, name: "呆呆", position: "上单", level: "R" },
+                    { id: 4, name: "宸宇", position: "上单", level: "R" },
+                    { id: 5, name: "祥麟", position: "上单", level: "R" },
+                    { id: 6, name: "Langx", position: "上单", level: "队长" },
+                    { id: 7, name: "957", position: "上单", level: "队长" }
+                ],
+                "打野": [
+                    { id: 8, name: "赵俊日", position: "打野", level: "R" },
+                    { id: 9, name: "管泽元", position: "打野", level: "R" },
+                    { id: 10, name: "友浩", position: "打野", level: "R" },
+                    { id: 11, name: "张硕", position: "打野", level: "R" },
+                    { id: 12, name: "乐乐", position: "打野", level: "R" },
+                    { id: 13, name: "Fireloli", position: "打野", level: "队长" },
+                    { id: 14, name: "Hacker", position: "打野", level: "队长" }
+                ],
+                "中单": [
+                    { id: 15, name: "乘风儿", position: "中单", level: "R" },
+                    { id: 16, name: "王淞", position: "中单", level: "R" },
+                    { id: 17, name: "Ning", position: "中单", level: "R" },
+                    { id: 18, name: "小伞", position: "中单", level: "R" },
+                    { id: 19, name: "Zonic", position: "中单", level: "R" },
+                    { id: 20, name: "Doby", position: "中单", level: "R" },
+                    { id: 21, name: "Xiye", position: "中单", level: "队长" }
+                ],
+                "射手": [
+                    { id: 22, name: "宝蓝", position: "射手", level: "R" },
+                    { id: 23, name: "毛毛", position: "射手", level: "R" },
+                    { id: 24, name: "Suki", position: "射手", level: "R" },
+                    { id: 25, name: "怀南", position: "射手", level: "R" },
+                    { id: 26, name: "瞳夕", position: "射手", level: "R" },
+                    { id: 27, name: "Mage", position: "射手", level: "R" },
+                    { id: 28, name: "雨凡", position: "射手", level: "R" }
+                ],
+                "辅助": [
+                    { id: 29, name: "十月", position: "辅助", level: "R" },
+                    { id: 30, name: "周敢敢", position: "辅助", level: "R" },
+                    { id: 31, name: "阿芙", position: "辅助", level: "R" },
+                    { id: 32, name: "Kinko", position: "辅助", level: "R" },
+                    { id: 33, name: "Cryin", position: "辅助", level: "R" },
+                    { id: 34, name: "Pyl", position: "辅助", level: "队长" },
+                    { id: 35, name: "Doinb", position: "辅助", level: "队长" }
+                ]
+            };
+
+            // 位置简写映射
+            const positionAbbr = {
+                "上单": "上",
+                "打野": "野",
+                "中单": "中",
+                "射手": "射",
+                "辅助": "辅"
+            };
+
+            // 位置顺序
+            const positionOrder = ["上单", "打野", "中单", "射手", "辅助"];
+
+            // 当前数据
+            let teams = JSON.parse(JSON.stringify(defaultTeams));
+            let playersByPosition = JSON.parse(JSON.stringify(defaultPlayersByPosition));
+
+            // 导入数据备份
+            let importedData = null;
+
+            const positionColors = {
+                "上单": "position-top",
+                "打野": "position-jungle",
+                "中单": "position-mid",
+                "射手": "position-adc",
+                "辅助": "position-support"
+            };
+
+            let nextPlayerId = 36;
+            let nextTeamId = 8;
+
+            // 检查选手是否已经在某个队伍中
+            function isPlayerInAnyTeam(playerId) {
+                return teams.some(team =>
+                    team.members.some(member => member.id === playerId)
+                );
+            }
+
+            // 检查选手名称是否已经在其他队伍中使用
+            function isPlayerNameInOtherTeam(playerName, currentTeamId) {
+                return teams.some(team =>
+                    team.id !== currentTeamId &&
+                    team.members.some(member => member.name === playerName)
+                );
+            }
+
+            // 检查队伍中是否已有队长
+            function hasCaptain(team) {
+                return team.members.some(member => member.level === "队长");
+            }
+
+            // 按位置顺序排序队伍成员（仅用于一键生成阵容）
+            function sortTeamMembersByPosition(team) {
+                team.members.sort((a, b) => {
+                    return positionOrder.indexOf(a.position) - positionOrder.indexOf(b.position);
+                });
+            }
+
+            // 渲染队伍
+            function renderTeams() {
+                const teamsContainer = document.getElementById('teamsContainer');
+                if (!teamsContainer) {
+                    console.error('teamsContainer not found');
+                    return;
+                }
+
+                let teamsHTML = '';
+
+                teams.forEach(team => {
+                    let membersHTML = '';
+                    for (let i = 0; i < 5; i++) {
+                        if (team.members[i]) {
+                            const member = team.members[i];
+                            const isCaptain = member.level === "队长";
+                            const positionClass = positionColors[member.position];
+                            const showLevel = member.level !== "队长"; // 队长不显示等级
+                            const positionAbbreviation = positionAbbr[member.position] || member.position;
+                            const teamHasCaptain = hasCaptain(team);
+                            const showCaptainBtn = !teamHasCaptain;
+
+                            membersHTML += `
+                                <div class="member-item" data-member-index="${i}" draggable="true">
+                                    <div class="member-left">
+                                        <div class="player-name-container">
+                                            <span class="player-name-static">${member.name}</span>
+                                        </div>
+                                    </div>
+                                    <div class="member-right">
+                                        <div class="position-and-level">
+                                            <span class="position-tag ${positionClass}">${positionAbbreviation}</span>
+                                            ${showLevel ? `<span class="player-level level-${member.level}">${member.level}</span>` : ''}
+                                        </div>
+                                        <div class="member-actions">
+                                            ${showCaptainBtn ? `
+                                                <button class="btn btn-outline-warning btn-icon" data-bs-toggle="tooltip" data-bs-title="指定为队长" onclick="setAsCaptain(${team.id}, ${i})">
+                                                    <i class="fas fa-crown"></i>
+                                                </button>
+                                            ` : ''}
+                                            <button class="btn btn-outline-danger btn-icon" data-bs-toggle="tooltip" data-bs-title="移除选手" onclick="removeFromTeam(${team.id}, ${i})">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                        ${isCaptain ? '<span class="captain-badge">队长</span>' : ''}
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            membersHTML += `<div class="member-item empty-slot">空位</div>`;
+                        }
+                    }
+
+                    teamsHTML += `
+                        <div class="team-card" data-team-id="${team.id}">
+                            <div class="team-header">
+                                <div class="team-info">
+                                    <div class="team-number" style="background-color: ${team.color}">${team.id}</div>
+                                    <span class="team-name" contenteditable="true" onblur="updateTeamName(${team.id}, this.textContent)">${team.name}</span>
+                                </div>
+                                <div class="team-actions">
+                                    <button class="btn btn-outline-danger btn-icon" data-bs-toggle="tooltip" data-bs-title="移除队伍" onclick="removeTeam(${team.id})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="team-members">
+                                ${membersHTML}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                teamsContainer.innerHTML = teamsHTML;
+                bindDragEvents();
+                bindMemberDragEvents();
+
+                // 重新初始化工具提示
+                const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+            }
+
+            // 渲染选手池
+            function renderPlayerPool() {
+                const positionsContainer = document.getElementById('positionsContainer');
+                if (!positionsContainer) {
+                    console.error('positionsContainer not found');
+                    return;
+                }
+
+                let positionsHTML = '';
+
+                Object.entries(playersByPosition).forEach(([position, players]) => {
+                    const colorClass = positionColors[position];
+                    const playerCount = players.length;
+
+                    let playersHTML = '';
+                    players.forEach(player => {
+                        playersHTML += `
+                            <div class="player-item" 
+                                 draggable="true" 
+                                 data-player-id="${player.id}" 
+                                 data-player-name="${player.name}" 
+                                 data-player-position="${player.position}"
+                                 data-player-level="${player.level}">
+                                <div class="player-header">
+                                    <div class="player-name">
+                                        <span class="player-name-text">${player.name}</span>
+                                        <span class="player-level-pool level-${player.level}">${player.level}</span>
+                                    </div>
+                                    <div class="player-actions">
+                                        <button class="btn btn-outline-primary btn-icon" data-bs-toggle="tooltip" data-bs-title="更名" onclick="renamePlayer('${position}', ${player.id})">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-outline-info btn-icon" data-bs-toggle="tooltip" data-bs-title="评级" onclick="changeLevel('${position}', ${player.id})">
+                                            <i class="fas fa-star"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-icon" data-bs-toggle="tooltip" data-bs-title="移除" onclick="removePlayer('${position}', ${player.id})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    // 动态计算按钮位置
+                    const buttonPositionClass = playerCount <= 4 ? 'add-player-btn dynamic-position' : 'add-player-btn';
+
+                    positionsHTML += `
+                        <div class="position-column">
+                            <div class="position-title ${colorClass}">${position} (${playerCount}名)</div>
+                            <div class="position-players ${playerCount <= 4 ? 'empty' : ''}">
+                                ${playersHTML}
+                                ${playerCount <= 4 ? '' : `<button class="${buttonPositionClass}" onclick="addNewPlayer('${position}')">
+                                    <i class="fas fa-plus"></i> 添加选手
+                                </button>`}
+                            </div>
+                            ${playerCount <= 4 ? `<button class="${buttonPositionClass}" onclick="addNewPlayer('${position}')">
+                                <i class="fas fa-plus"></i> 添加选手
+                            </button>` : ''}
+                        </div>
+                    `;
+                });
+
+                positionsContainer.innerHTML = positionsHTML;
+                bindPlayerDragEvents();
+
+                // 重新初始化工具提示
+                const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+            }
+
+            // 绑定选手拖拽事件
+            function bindPlayerDragEvents() {
+                document.querySelectorAll('.player-item').forEach(item => {
+                    item.addEventListener('dragstart', function (e) {
+                        this.style.opacity = '0.5';
+                        e.dataTransfer.setData('text/plain', JSON.stringify({
+                            id: this.dataset.playerId,
+                            name: this.dataset.playerName,
+                            position: this.dataset.playerPosition,
+                            level: this.dataset.playerLevel
+                        }));
+                    });
+
+                    item.addEventListener('dragend', function () {
+                        this.style.opacity = '1';
+                    });
+                });
+            }
+
+            // 绑定队伍拖拽事件
+            function bindDragEvents() {
+                document.querySelectorAll('.team-card').forEach(teamCard => {
+                    teamCard.addEventListener('dragover', function (e) {
+                        e.preventDefault();
+                        this.style.backgroundColor = '#f8f9fa';
+                    });
+
+                    teamCard.addEventListener('dragleave', function () {
+                        this.style.backgroundColor = 'white';
+                    });
+
+                    teamCard.addEventListener('drop', function (e) {
+                        e.preventDefault();
+                        this.style.backgroundColor = 'white';
+
+                        const playerData = JSON.parse(e.dataTransfer.getData('text/plain'));
+                        const teamId = parseInt(this.dataset.teamId);
+                        const team = teams.find(t => t.id === teamId);
+
+                        // 检查选手是否已经在其他队伍中
+                        if (isPlayerInAnyTeam(parseInt(playerData.id))) {
+                            alert('该选手已被其他队伍选中！');
+                            return;
+                        }
+
+                        // 检查是否已经存在相同位置的选手
+                        const hasSamePosition = team.members.some(member => member.position === playerData.position);
+                        if (hasSamePosition) {
+                            alert(`该队伍已有${playerData.position}位置的选手！`);
+                            return;
+                        }
+
+                        // 检查是否已经有其他队伍使用相同选手名称
+                        if (isPlayerNameInOtherTeam(playerData.name, teamId)) {
+                            alert(`选手"${playerData.name}"已被其他队伍选中！`);
+                            return;
+                        }
+
+                        // 检查是否要添加队长，且队伍中是否已有队长
+                        if (playerData.level === "队长" && hasCaptain(team)) {
+                            alert('该队伍已有一名队长，无法再添加队长！');
+                            return;
+                        }
+
+                        if (team && team.members.length < 5) {
+                            team.members.push({
+                                id: parseInt(playerData.id),
+                                name: playerData.name,
+                                position: playerData.position,
+                                level: playerData.level
+                            });
+
+                            // 如果添加的是队长，自动更新队伍名称
+                            if (playerData.level === "队长") {
+                                team.name = playerData.name;
+                            }
+
+                            // 从选手池中移除该选手
+                            playersByPosition[playerData.position] = playersByPosition[playerData.position].filter(p => p.id !== parseInt(playerData.id));
+                            renderTeams();
+                            renderPlayerPool();
+                        }
+                    });
+                });
+            }
+
+            // 绑定队伍内选手拖拽事件
+            function bindMemberDragEvents() {
+                document.querySelectorAll('.team-card .member-item').forEach(item => {
+                    item.addEventListener('dragstart', function (e) {
+                        this.classList.add('dragging');
+                        const teamId = parseInt(this.closest('.team-card').dataset.teamId);
+                        const memberIndex = parseInt(this.dataset.memberIndex);
+                        e.dataTransfer.setData('text/plain', JSON.stringify({
+                            teamId: teamId,
+                            memberIndex: memberIndex,
+                            type: 'move' // 标记为内部移动
+                        }));
+                    });
+
+                    item.addEventListener('dragend', function () {
+                        this.classList.remove('dragging');
+                    });
+                });
+
+                document.querySelectorAll('.team-card .member-item').forEach(item => {
+                    item.addEventListener('dragover', function (e) {
+                        e.preventDefault();
+                    });
+
+                    item.addEventListener('drop', function (e) {
+                        e.preventDefault();
+                        const sourceData = JSON.parse(e.dataTransfer.getData('text/plain'));
+
+                        // 如果是内部移动，不进行满员检查
+                        if (sourceData.type === 'move') {
+                            const sourceTeamId = sourceData.teamId;
+                            const sourceMemberIndex = sourceData.memberIndex;
+
+                            const targetTeamId = parseInt(this.closest('.team-card').dataset.teamId);
+                            const targetMemberIndex = parseInt(this.dataset.memberIndex);
+
+                            if (sourceTeamId === targetTeamId) {
+                                // 同一队伍内移动
+                                const team = teams.find(t => t.id === sourceTeamId);
+                                if (team) {
+                                    const [movedMember] = team.members.splice(sourceMemberIndex, 1);
+                                    team.members.splice(targetMemberIndex, 0, movedMember);
+                                    renderTeams();
+                                }
+                            }
+                        }
+                    });
+                });
+            }
+
+            // 从队伍中移除选手
+            window.removeFromTeam = function (teamId, memberIndex) {
+                const team = teams.find(t => t.id === teamId);
+                if (team && team.members[memberIndex]) {
+                    const member = team.members[memberIndex];
+                    // 将选手放回选手池
+                    if (playersByPosition[member.position]) {
+                        playersByPosition[member.position].push(member);
+                    }
+                    team.members.splice(memberIndex, 1);
+                    renderTeams();
+                    renderPlayerPool();
+                }
+            }
+
+            // 设置选手为队长
+            window.setAsCaptain = function (teamId, memberIndex) {
+                const team = teams.find(t => t.id === teamId);
+                if (team && team.members[memberIndex]) {
+                    const member = team.members[memberIndex];
+                    member.level = "队长";
+                    team.name = member.name;
+                    renderTeams();
+                }
+            }
+
+            // 移除选手
+            window.removePlayer = function (position, playerId) {
+                //if (confirm('确定要移除这名选手吗？')) {
+                    playersByPosition[position] = playersByPosition[position].filter(p => p.id !== playerId);
+                    renderPlayerPool();
+                //}
+            }
+
+            // 添加新选手
+            window.addNewPlayer = function (position) {
+                const name = prompt('请输入选手名称：');
+                if (name && name.trim()) {
+                    const level = prompt('请输入选手等级（队长/SSR/SR/R）：', 'R');
+                    if (level && ['队长', 'SSR', 'SR', 'R'].includes(level)) {
+                        playersByPosition[position].push({
+                            id: nextPlayerId++,
+                            name: name.trim(),
+                            position: position,
+                            level: level
+                        });
+                        renderPlayerPool();
+                    } else {
+                        alert('请输入有效的等级（队长/SSR/SR/R）');
+                    }
+                }
+            };
+
+            // 修改选手名称
+            window.renamePlayer = function (position, playerId) {
+                const player = playersByPosition[position].find(p => p.id === playerId);
+                if (player) {
+                    const newName = prompt('请输入新的选手名称：', player.name);
+                    if (newName && newName.trim()) {
+                        player.name = newName.trim();
+                        renderPlayerPool();
+                    }
+                }
+            };
+
+            // 修改选手等级
+            window.changeLevel = function (position, playerId) {
+                const player = playersByPosition[position].find(p => p.id === playerId);
+                if (player) {
+                    const newLevel = prompt('请输入新的选手等级（队长/SSR/SR/R）：', player.level);
+                    if (newLevel && ['队长', 'SSR', 'SR', 'R'].includes(newLevel)) {
+                        player.level = newLevel;
+                        renderPlayerPool();
+                    } else {
+                        alert('请输入有效的等级（队长/SSR/SR/R）');
+                    }
+                }
+            };
+
+            // 一键生成阵容
+            document.getElementById('generateTeamBtn').addEventListener('click', function () {
+                //if (confirm('确定要一键生成阵容吗？将在现有队伍基础上补充选手。')) {
+                    generateBalancedTeams();
+                //}
+            });
+
+            // 智能生成平衡阵容
+            function generateBalancedTeams() {
+                // 备份当前选手池
+                const originalPlayerPool = JSON.parse(JSON.stringify(playersByPosition));
+                
+                // 获取所有可用选手
+                const allAvailablePlayers = [];
+                Object.values(playersByPosition).forEach(players => {
+                    allAvailablePlayers.push(...players);
+                });
+
+                // 按等级分组可用选手
+                const availablePlayersByLevel = {
+                    '队长': allAvailablePlayers.filter(p => p.level === '队长'),
+                    'SSR': allAvailablePlayers.filter(p => p.level === 'SSR'),
+                    'SR': allAvailablePlayers.filter(p => p.level === 'SR'),
+                    'R': allAvailablePlayers.filter(p => p.level === 'R')
+                };
+
+                // 计算每个队伍需要的各等级选手数量
+                const teamCount = teams.length;
+                const levelDistribution = {};
+
+                // 计算每个等级的总选手数
+                Object.keys(availablePlayersByLevel).forEach(level => {
+                    const players = availablePlayersByLevel[level];
+                    if (players.length > 0) {
+                        // 计算每个队伍应该分配的数量
+                        const perTeam = Math.floor(players.length / teamCount);
+                        levelDistribution[level] = perTeam;
+                    }
+                });
+
+                // 为每个队伍分配选手
+                teams.forEach(team => {
+                    const positions = ['上单', '打野', '中单', '射手', '辅助'];
+                    const assignedPositions = new Set();
+                    
+                    // 获取队伍已有的位置和等级
+                    team.members.forEach(member => {
+                        assignedPositions.add(member.position);
+                    });
+
+                    // 先分配队长（如果有且队伍没有队长）
+                    if (availablePlayersByLevel['队长'].length > 0 && !hasCaptain(team)) {
+                        const captainPlayers = availablePlayersByLevel['队长'].filter(p =>
+                            !isPlayerInAnyTeam(p.id) && !assignedPositions.has(p.position)
+                        );
+                        if (captainPlayers.length > 0) {
+                            const randomCaptain = captainPlayers[Math.floor(Math.random() * captainPlayers.length)];
+                            team.members.push(randomCaptain);
+                            assignedPositions.add(randomCaptain.position);
+                            // 从选手池移除
+                            playersByPosition[randomCaptain.position] = playersByPosition[randomCaptain.position].filter(p => p.id !== randomCaptain.id);
+                            // 设置队伍名称为队长名称
+                            team.name = randomCaptain.name;
+                        }
+                    }
+
+                    // 分配其他等级的选手，优先分配高等级选手
+                    const levels = ['SSR', 'SR', 'R'];
+                    levels.forEach(level => {
+                        if (availablePlayersByLevel[level] && availablePlayersByLevel[level].length > 0) {
+                            const count = levelDistribution[level] || 1;
+                            for (let i = 0; i < count && team.members.length < 5; i++) {
+                                const availablePlayers = availablePlayersByLevel[level].filter(p =>
+                                    !isPlayerInAnyTeam(p.id) &&
+                                    !assignedPositions.has(p.position) &&
+                                    playersByPosition[p.position].includes(p)
+                                );
+
+                                if (availablePlayers.length > 0) {
+                                    const randomPlayer = availablePlayers[Math.floor(Math.random() * availablePlayers.length)];
+                                    team.members.push(randomPlayer);
+                                    assignedPositions.add(randomPlayer.position);
+                                    // 从选手池移除
+                                    playersByPosition[randomPlayer.position] = playersByPosition[randomPlayer.position].filter(p => p.id !== randomPlayer.id);
+                                }
+                            }
+                        }
+                    });
+
+                    // 填充剩余位置
+                    while (team.members.length < 5) {
+                        const availablePositions = positions.filter(p => !assignedPositions.has(p));
+                        if (availablePositions.length === 0) break;
+
+                        const randomPosition = availablePositions[Math.floor(Math.random() * availablePositions.length)];
+                        const availablePlayers = playersByPosition[randomPosition].filter(p =>
+                            !isPlayerInAnyTeam(p.id)
+                        );
+
+                        if (availablePlayers.length > 0) {
+                            const randomPlayer = availablePlayers[Math.floor(Math.random() * availablePlayers.length)];
+                            team.members.push(randomPlayer);
+                            assignedPositions.add(randomPosition);
+                            // 从选手池移除
+                            playersByPosition[randomPosition] = playersByPosition[randomPosition].filter(p => p.id !== randomPlayer.id);
+                        } else {
+                            assignedPositions.add(randomPosition); // 如果没有可用选手，标记该位置已尝试
+                        }
+                    }
+
+                    // 如果没有队长，设置队伍名称为第一个选手的名称
+                    if (!hasCaptain(team) && team.members.length > 0) {
+                        team.name = team.members[0].name;
+                    }
+
+                    // 按位置顺序排序（仅用于一键生成阵容）
+                    sortTeamMembersByPosition(team);
+                });
+
+                renderTeams();
+                renderPlayerPool();
+                //alert('一键阵容生成完成！');
+            }
+
+            // 添加新队伍
+            document.getElementById('addTeamBtn').addEventListener('click', function () {
+                if (teams.length >= 10) {
+                    alert('最多只能创建10支队伍！');
+                    return;
+                }
+
+                const teamName = prompt('请输入队伍名称：', `${nextTeamId}队`);
+                if (teamName && teamName.trim()) {
+                    teams.push({
+                        id: nextTeamId++,
+                        name: teamName.trim(),
+                        color: getRandomColor(),
+                        members: []
+                    });
+                    renderTeams();
+                }
+            });
+
+            // 移除队伍
+            window.removeTeam = function (teamId) {
+                if (confirm('确定要移除这支队伍吗？队伍中的选手将返回选手池。')) {
+                    const team = teams.find(t => t.id === teamId);
+                    if (team) {
+                        // 将队伍中的选手放回选手池
+                        team.members.forEach(member => {
+                            if (playersByPosition[member.position]) {
+                                playersByPosition[member.position].push(member);
+                            }
+                        });
+
+                        teams = teams.filter(t => t.id !== teamId);
+                        renderTeams();
+                        renderPlayerPool();
+                    }
+                }
+            };
+
+            // 更新队伍名称
+            window.updateTeamName = function (teamId, newName) {
+                const team = teams.find(t => t.id === teamId);
+                if (team && newName && newName.trim()) {
+                    team.name = newName.trim();
+                    renderTeams();
+                }
+            };
+
+            // 一键清空所有队伍
+            document.getElementById('clearAllBtn').addEventListener('click', function () {
+                if (confirm('确定要清空所有队伍吗？所有选手将返回选手池。')) {
+                    teams.forEach(team => {
+                        team.members.forEach(member => {
+                            if (playersByPosition[member.position]) {
+                                playersByPosition[member.position].push(member);
+                            }
+                        });
+                        team.members = [];
+                    });
+                    renderTeams();
+                    renderPlayerPool();
+                }
+            });
+
+            // 恢复默认值
+            document.getElementById('resetBtn').addEventListener('click', function () {
+                if (confirm('确定要恢复默认值吗？当前所有数据将丢失。')) {
+                    teams = JSON.parse(JSON.stringify(defaultTeams));
+                    playersByPosition = JSON.parse(JSON.stringify(defaultPlayersByPosition));
+                    nextPlayerId = 36;
+                    nextTeamId = 8;
+                    renderTeams();
+                    renderPlayerPool();
+                }
+            });
+
+            // 导入阵容
+            document.getElementById('importBtn').addEventListener('click', function () {
+                document.getElementById('importFile').click();
+            });
+
+            document.getElementById('importFile').addEventListener('change', function (e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (event) {
+                        try {
+                            const data = JSON.parse(event.target.result);
+                            importedData = data;
+
+                            // 更新数据
+                            teams = data.teams || JSON.parse(JSON.stringify(defaultTeams));
+                            playersByPosition = data.playersByPosition || JSON.parse(JSON.stringify(defaultPlayersByPosition));
+                            nextPlayerId = data.nextPlayerId || 36;
+                            nextTeamId = data.nextTeamId || 8;
+
+                            renderTeams();
+                            renderPlayerPool();
+                            //alert('阵容导入成功！');
+                        } catch (error) {
+                            alert('导入失败：文件格式不正确');
+                            console.error(error);
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+                e.target.value = ''; // 重置文件输入
+            });
+
+            // 导出阵容
+            document.getElementById('exportBtn').addEventListener('click', function () {
+                const data = {
+                    teams: teams,
+                    playersByPosition: playersByPosition,
+                    nextPlayerId: nextPlayerId,
+                    nextTeamId: nextTeamId
+                };
+
+                const dataStr = JSON.stringify(data, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'teams-config.json';
+                link.click();
+
+                URL.revokeObjectURL(url);
+            });
+
+            // 生成随机颜色
+            function getRandomColor() {
+                const colors = [
+                    '#dc3545', '#0d6efd', '#198754', '#fd7e14',
+                    '#6f42c1', '#20c997', '#e83e8c', '#ffc107',
+                    '#6c757d', '#0dcaf0'
+                ];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+
+            // 初始化渲染
+            renderTeams();
+            renderPlayerPool();
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
