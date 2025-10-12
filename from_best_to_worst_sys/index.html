@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>从夯到拉</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin-top: 30px;
+        }
+        .header-section {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .table-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .explanation {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .table-layout {
+            display: flex;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .labels-column {
+            width: 150px;
+            flex-shrink: 0;
+        }
+        .content-column {
+            flex-grow: 1;
+            background-color: #f8f9fa;
+        }
+        .table-row {
+            display: flex;
+            min-height: 120px;
+            border-bottom: 3px solid #000;
+            transition: height 0.3s ease;
+        }
+        .label-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .content-cell {
+            display: flex;
+            align-items: flex-start;
+            padding: 15px;
+            flex-wrap: wrap;
+            gap: 8px;
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid #dee2e6;
+            border-bottom: 3px solid #000;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+        .gradient-1 {
+            background: linear-gradient(135deg, #a8e6cf, #dcedc1);
+        }
+        .gradient-2 {
+            background: linear-gradient(135deg, #ffd3b6, #ffaaa5);
+        }
+        .gradient-3 {
+            background: linear-gradient(135deg, #ff8b94, #ffaaa5);
+        }
+        .gradient-4 {
+            background: linear-gradient(135deg, #d291bc, #e0bbe4);
+        }
+        .gradient-5 {
+            background: linear-gradient(135deg, #9896f0, #d59bf6);
+        }
+        .section-title {
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #333;
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 10px;
+        }
+        .image-item {
+            max-width: 120px;
+            max-height: 70px;
+            border-radius: 4px;
+            margin: 5px;
+            cursor: move;
+            transition: transform 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            object-fit: contain;
+        }
+        .image-item:hover {
+            transform: scale(1.05);
+        }
+        .drop-zone {
+            transition: all 0.3s;
+        }
+        .drop-zone.drag-over {
+            background-color: rgba(13, 110, 253, 0.05);
+        }
+        .image-preview-container {
+            position: relative;
+            display: inline-block;
+            margin: 5px;
+        }
+        .image-remove {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .image-preview-container:hover .image-remove {
+            opacity: 1;
+        }
+        .btn-custom {
+            margin-right: 10px;
+            min-width: 120px;
+        }
+        .upload-hint {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            margin-top: 10px;
+        }
+        .empty-state {
+            color: #6c757d;
+            font-style: italic;
+            width: 100%;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-section">
+            <h1 class="text-center mb-4">从夯到拉</h1>
+            <div class="d-flex justify-content-center">
+                <button id="import-btn" class="btn btn-primary btn-custom">导入数据</button>
+                <button id="export-btn" class="btn btn-success btn-custom">导出数据</button>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <h3 class="section-title">等级评价表</h3>
+            
+            <div class="table-layout">
+                <div class="labels-column" id="labels-column">
+                    <!-- 标签列将通过JavaScript动态生成 -->
+                </div>
+                <div class="content-column" id="content-column">
+                    <!-- 内容列将通过JavaScript动态生成 -->
+                </div>
+            </div>
+            
+            <div class="upload-hint">
+                提示：将图片文件拖拽到上方表格区域即可添加图片
+            </div>
+        </div>
+        
+        <div class="explanation">
+            <h5>使用说明：</h5>
+            <ul>
+                <li>左侧标签表示从"夯"(最好)到"拉完了"(最不好)的等级</li>
+                <li>将图片文件直接拖拽到右侧内容区域即可添加图片</li>
+                <li>图片会自动按比例缩放，适应显示区域</li>
+                <li>可以拖拽图片在不同等级之间移动</li>
+                <li>鼠标悬停在图片上会出现删除按钮</li>
+                <li>使用"导入数据"和"导出数据"按钮保存和加载表格内容</li>
+                <li>每个等级可以放置多张图片，但同一张图片不能重复出现</li>
+                <li>当图片数量增多时，行高会自动扩展以容纳更多图片</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const labels = ['夯', '等级', '人上人', 'NPC', '拉完了'];
+            const gradients = [
+                'gradient-1', // 最好 - 浅绿色
+                'gradient-2', // 较好 - 浅橙色
+                'gradient-3', // 中等 - 浅红色
+                'gradient-4', // 较差 - 浅紫色
+                'gradient-5'  // 最差 - 浅蓝色
+            ];
+            
+            const labelsColumn = document.getElementById('labels-column');
+            const contentColumn = document.getElementById('content-column');
+            const importBtn = document.getElementById('import-btn');
+            const exportBtn = document.getElementById('export-btn');
+            
+            let draggedImage = null;
+            // 存储所有已添加图片的URL，防止重复添加
+            const addedImages = new Set();
+
+            // 创建表格行
+            function createTableRows() {
+                labelsColumn.innerHTML = '';
+                contentColumn.innerHTML = '';
+                
+                labels.forEach((label, index) => {
+                    // 创建标签单元格
+                    const labelCell = document.createElement('div');
+                    labelCell.className = `table-row label-cell ${gradients[index]}`;
+                    labelCell.textContent = label;
+                    labelCell.dataset.index = index;
+                    labelsColumn.appendChild(labelCell);
+                    
+                    // 创建内容单元格
+                    const contentCell = document.createElement('div');
+                    contentCell.className = 'table-row content-cell drop-zone';
+                    contentCell.dataset.index = index;
+                    
+                    // 添加空状态提示
+                    const emptyState = document.createElement('div');
+                    emptyState.className = 'empty-state';
+                    emptyState.textContent = '拖拽图片到此处';
+                    contentCell.appendChild(emptyState);
+                    
+                    // 添加拖放事件监听器
+                    setupDropZone(contentCell);
+                    
+                    contentColumn.appendChild(contentCell);
+                });
+            }
+
+            // 初始化表格
+            createTableRows();
+
+            // 设置拖放区域
+            function setupDropZone(element) {
+                element.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    this.classList.add('drag-over');
+                });
+                
+                element.addEventListener('dragleave', function() {
+                    this.classList.remove('drag-over');
+                });
+                
+                element.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    this.classList.remove('drag-over');
+                    
+                    // 处理文件拖放
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        handleImageFiles(files, this);
+                    }
+                    
+                    // 处理从其他区域拖拽的图片
+                    if (draggedImage) {
+                        // 检查目标单元格是否已存在相同图片
+                        const imgSrc = draggedImage.querySelector('img').src;
+                        const existingImages = this.querySelectorAll('img');
+                        let imageExists = false;
+                        
+                        for (let existingImg of existingImages) {
+                            if (existingImg.src === imgSrc) {
+                                imageExists = true;
+                                break;
+                            }
+                        }
+                        
+                        if (!imageExists) {
+                            // 移除原位置的图片
+                            if (draggedImage.parentNode) {
+                                draggedImage.parentNode.removeChild(draggedImage);
+                            }
+                            this.appendChild(draggedImage);
+                            updateEmptyState(this);
+                            updateRowHeight(this);
+                        } else {
+                            alert('该图片已在此等级中存在！');
+                        }
+                        
+                        draggedImage = null;
+                    }
+                });
+            }
+            
+            // 处理图片文件
+            function handleImageFiles(files, container) {
+                for (let file of files) {
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            // 检查图片是否已存在
+                            if (addedImages.has(e.target.result)) {
+                                alert('该图片已存在，不能重复添加！');
+                                return;
+                            }
+                            
+                            const imgContainer = document.createElement('div');
+                            imgContainer.className = 'image-preview-container';
+                            imgContainer.draggable = true;
+                            
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.className = 'image-item';
+                            
+                            // 图片加载完成后检查尺寸并调整
+                            img.onload = function() {
+                                adjustImageSize(img);
+                            };
+                            
+                            const removeBtn = document.createElement('div');
+                            removeBtn.className = 'image-remove';
+                            removeBtn.innerHTML = '×';
+                            removeBtn.addEventListener('click', function(e) {
+                                e.stopPropagation();
+                                // 从已添加图片集合中移除
+                                addedImages.delete(img.src);
+                                imgContainer.remove();
+                                updateEmptyState(container);
+                                updateRowHeight(container);
+                            });
+                            
+                            imgContainer.appendChild(img);
+                            imgContainer.appendChild(removeBtn);
+                            
+                            // 设置拖拽事件
+                            imgContainer.addEventListener('dragstart', function(e) {
+                                draggedImage = this;
+                                e.dataTransfer.effectAllowed = 'move';
+                            });
+                            
+                            // 添加到已添加图片集合
+                            addedImages.add(e.target.result);
+                            
+                            // 移除空状态提示
+                            const emptyState = container.querySelector('.empty-state');
+                            if (emptyState) {
+                                emptyState.remove();
+                            }
+                            
+                            container.appendChild(imgContainer);
+                            
+                            // 更新行高
+                            updateRowHeight(container);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                }
+            }
+            
+            // 更新行高
+            function updateRowHeight(contentCell) {
+                const index = contentCell.dataset.index;
+                const labelRow = document.querySelector(`.label-cell[data-index="${index}"]`);
+                const contentRow = contentCell;
+                
+                // 计算需要的行高
+                const imageCount = contentCell.querySelectorAll('.image-preview-container').length;
+                const baseHeight = 120; // 基础行高
+                const imageHeight = 90; // 每张图片占用的高度（包括边距）
+                
+                // 计算需要的行数
+                const containerWidth = contentCell.offsetWidth;
+                const imageWidth = 130; // 每张图片占用的宽度（包括边距）
+                const imagesPerRow = Math.floor(containerWidth / imageWidth) || 1;
+                
+                // 计算需要的行数
+                const rowsNeeded = Math.ceil(imageCount / imagesPerRow);
+                
+                // 计算总高度
+                const totalHeight = baseHeight + (rowsNeeded - 1) * imageHeight;
+                
+                // 设置行高
+                labelRow.style.height = `${totalHeight}px`;
+                contentRow.style.height = `${totalHeight}px`;
+            }
+            
+            // 更新空状态显示
+            function updateEmptyState(container) {
+                const hasImages = container.querySelector('.image-preview-container') !== null;
+                const emptyState = container.querySelector('.empty-state');
+                
+                if (!hasImages && !emptyState) {
+                    const newEmptyState = document.createElement('div');
+                    newEmptyState.className = 'empty-state';
+                    newEmptyState.textContent = '拖拽图片到此处';
+                    container.appendChild(newEmptyState);
+                } else if (hasImages && emptyState) {
+                    emptyState.remove();
+                }
+            }
+            
+            // 调整图片尺寸
+            function adjustImageSize(img) {
+                const maxWidth = 120;
+                const maxHeight = 70;
+                
+                let width = img.naturalWidth;
+                let height = img.naturalHeight;
+                
+                // 如果图片尺寸超过限制，则等比例缩放
+                if (width > maxWidth || height > maxHeight) {
+                    const ratio = Math.min(maxWidth / width, maxHeight / height);
+                    width *= ratio;
+                    height *= ratio;
+                }
+                
+                img.style.width = width + 'px';
+                img.style.height = height + 'px';
+            }
+            
+            // 导出数据功能
+            exportBtn.addEventListener('click', function() {
+                const data = {};
+                const contentCells = document.querySelectorAll('.content-cell');
+                
+                contentCells.forEach((cell, index) => {
+                    const imageData = [];
+                    
+                    // 收集图片数据
+                    const images = cell.querySelectorAll('.image-item');
+                    images.forEach(img => {
+                        imageData.push(img.src);
+                    });
+                    
+                    data[labels[index]] = {
+                        images: imageData
+                    };
+                });
+                
+                // 创建下载链接
+                const dataStr = JSON.stringify(data, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                const url = URL.createObjectURL(dataBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = '等级评价表数据.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                alert('数据已导出为JSON文件！');
+            });
+            
+            // 导入数据功能
+            importBtn.addEventListener('click', function() {
+                // 创建文件输入元素
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json';
+                input.onchange = function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            try {
+                                const data = JSON.parse(e.target.result);
+                                const contentCells = document.querySelectorAll('.content-cell');
+                                
+                                // 清空所有已添加图片
+                                addedImages.clear();
+                                
+                                contentCells.forEach((cell, index) => {
+                                    // 清空当前内容
+                                    cell.innerHTML = '';
+                                    
+                                    const label = labels[index];
+                                    if (data[label]) {
+                                        // 添加图片数据
+                                        if (data[label].images && Array.isArray(data[label].images)) {
+                                            data[label].images.forEach(src => {
+                                                // 检查图片是否已存在
+                                                if (!addedImages.has(src)) {
+                                                    addImageFromSrc(cell, src);
+                                                    addedImages.add(src);
+                                                }
+                                            });
+                                        }
+                                    }
+                                    
+                                    updateEmptyState(cell);
+                                    updateRowHeight(cell);
+                                });
+                                
+                                alert('数据导入成功！');
+                            } catch (e) {
+                                alert('数据格式错误，请检查JSON格式！');
+                            }
+                        };
+                        reader.readAsText(file);
+                    }
+                };
+                input.click();
+            });
+            
+            // 从URL添加图片
+            function addImageFromSrc(container, src) {
+                const imgContainer = document.createElement('div');
+                imgContainer.className = 'image-preview-container';
+                imgContainer.draggable = true;
+                
+                const img = document.createElement('img');
+                img.src = src;
+                img.className = 'image-item';
+                
+                // 图片加载完成后检查尺寸并调整
+                img.onload = function() {
+                    adjustImageSize(img);
+                };
+                
+                const removeBtn = document.createElement('div');
+                removeBtn.className = 'image-remove';
+                removeBtn.innerHTML = '×';
+                removeBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    // 从已添加图片集合中移除
+                    addedImages.delete(img.src);
+                    imgContainer.remove();
+                    updateEmptyState(container);
+                    updateRowHeight(container);
+                });
+                
+                imgContainer.appendChild(img);
+                imgContainer.appendChild(removeBtn);
+                
+                // 设置拖拽事件
+                imgContainer.addEventListener('dragstart', function(e) {
+                    draggedImage = this;
+                    e.dataTransfer.effectAllowed = 'move';
+                });
+                
+                // 移除空状态提示
+                const emptyState = container.querySelector('.empty-state');
+                if (emptyState) {
+                    emptyState.remove();
+                }
+                
+                container.appendChild(imgContainer);
+            }
+            
+            // 初始更新所有行高
+            function initializeRowHeights() {
+                const contentCells = document.querySelectorAll('.content-cell');
+                contentCells.forEach(cell => {
+                    updateRowHeight(cell);
+                });
+            }
+            
+            // 窗口大小改变时更新行高
+            window.addEventListener('resize', function() {
+                initializeRowHeights();
+            });
+            
+            // 初始化行高
+            initializeRowHeights();
+        });
+    </script>
+</body>
+</html>
