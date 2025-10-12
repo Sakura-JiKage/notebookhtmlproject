@@ -1,0 +1,2872 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英雄联盟阵容系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --danger-color: #dc3545;
+            --success-color: #198754;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        .main-content {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            flex: 1;
+            margin: 15px auto;
+            max-width: 1400px;
+            width: 95%;
+        }
+
+        .copyright {
+            background-color: #343a40;
+            color: white;
+            text-align: center;
+            padding: 15px 0;
+            width: 100%;
+            margin-top: auto;
+        }
+
+        .content-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 60px;
+        }
+
+        .import-export-area {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .formation-list-area {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 18px;
+            margin-bottom: 15px;
+        }
+
+        .formation-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .formation-tag {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 20px;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .formation-tag:hover {
+            background-color: #e9ecef;
+        }
+
+        .formation-tag.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .formation-tag-name {
+            font-weight: 500;
+        }
+
+        .formation-tag-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .formation-tag-btn {
+            background: none;
+            border: none;
+            padding: 2px 6px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: all 0.2s;
+        }
+
+        .formation-tag-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .team-area,
+        .player-pool-area {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 18px;
+            margin-bottom: 15px;
+        }
+
+        .teams-container {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+        }
+
+        @media (max-width: 1400px) {
+            .teams-container {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media (max-width: 992px) {
+            .teams-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .teams-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 576px) {
+            .teams-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .area-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .area-title {
+            display: flex;
+            align-items: center;
+        }
+
+        .area-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .team-card {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            min-height: 320px;
+        }
+
+        .team-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .team-info {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        .team-number {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background-color: #6f42c1;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 8px;
+            font-size: 0.85rem;
+        }
+
+        .team-name {
+            font-weight: bold;
+            color: #495057;
+            margin-right: 8px;
+            font-size: 1.0rem;
+        }
+
+        .team-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .team-members {
+            margin-top: 8px;
+        }
+
+        .member-item {
+            padding: 10px 8px;
+            border-bottom: 1px dashed #f1f3f4;
+            font-size: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            min-height: 65px;
+            transition: all 0.2s;
+            cursor: move;
+            position: relative;
+        }
+
+        .member-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .member-item.dragging {
+            opacity: 0.5;
+            background-color: #e9ecef;
+        }
+
+        .member-item.drag-over {
+            background-color: #e3f2fd;
+            border: 1px dashed #2196f3;
+        }
+
+        .member-left {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            flex: 1;
+        }
+
+        .player-name-container {
+            margin-bottom: 6px;
+        }
+
+        .player-name-static {
+            font-weight: 500;
+            color: #212529;
+            font-size: 0.9rem;
+            line-height: 1.2;
+            font-weight: bold;
+            word-break: break-word;
+            white-space: normal;
+        }
+
+        .member-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+            position: relative;
+            height: 100%;
+        }
+
+        .position-and-level {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+            transition: opacity 0.2s;
+        }
+
+        .position-tag {
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-size: 0.6rem;
+            font-weight: 500;
+            color: white;
+            display: inline-block;
+        }
+
+        .player-level {
+            display: inline-block;
+            min-width: 24px;
+            height: 16px;
+            border-radius: 8px;
+            text-align: center;
+            line-height: 16px;
+            font-size: 0.6rem;
+            font-weight: bold;
+        }
+
+        .level-大乘 {
+            background-color: #ff0000;
+            color: white;
+        }
+
+        .level-合体 {
+            background-color: #ff4500;
+            color: white;
+        }
+
+        .level-炼虚 {
+            background-color: #ff8c00;
+            color: white;
+        }
+
+        .level-化神 {
+            background-color: #ffd700;
+            color: #8b6914;
+        }
+
+        .level-元婴 {
+            background-color: #9acd32;
+            color: white;
+        }
+
+        .level-结丹 {
+            background-color: #32cd32;
+            color: white;
+        }
+
+        .level-筑基 {
+            background-color: #1e90ff;
+            color: white;
+        }
+
+        .level-炼气 {
+            background-color: #9370db;
+            color: white;
+        }
+
+        .level-凡人 {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .member-item:last-child {
+            border-bottom: none;
+        }
+
+        .member-actions {
+            display: flex;
+            gap: 4px;
+            position: absolute;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .member-item:hover .member-actions {
+            opacity: 1;
+        }
+
+        .member-item:hover .position-and-level {
+            opacity: 0;
+        }
+
+        .btn-xs {
+            padding: 2px 6px;
+            font-size: 0.65rem;
+            border-radius: 8px;
+        }
+
+        .btn-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            border-radius: 4px;
+        }
+
+        .empty-slot {
+            color: #6c757d;
+            font-style: italic;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 65px;
+            border: 1px dashed #dee2e6;
+            border-radius: 4px;
+            margin-bottom: 4px;
+        }
+
+        /* 选手池5列布局 */
+        .positions-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+        }
+
+        @media (max-width: 1400px) {
+            .positions-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 992px) {
+            .positions-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 576px) {
+            .positions-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .position-column {
+            background: white;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: relative;
+            min-height: 200px;
+        }
+
+        /* 位置颜色定义 */
+        .position-top {
+            background: linear-gradient(135deg, #ff6b6b, #c0392b);
+        }
+
+        .position-jungle {
+            background: linear-gradient(135deg, #27ae60, #16a085);
+        }
+
+        .position-mid {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+        }
+
+        .position-adc {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+        }
+
+        .position-support {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+
+        .position-title {
+            padding: 8px 12px;
+            border-radius: 16px;
+            margin-bottom: 12px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: white;
+        }
+
+        .position-players {
+            min-height: 180px;
+        }
+
+        .position-players.empty {
+            min-height: 0;
+        }
+
+        .player-item {
+            background: white;
+            border-radius: 6px;
+            padding: 8px 10px;
+            margin-bottom: 6px;
+            cursor: grab;
+            transition: all 0.2s;
+            border: 1px solid #e9ecef;
+        }
+
+        .player-item:hover {
+            background: #f8f9fa;
+            transform: translateX(2px);
+        }
+
+        .player-item.dragging {
+            opacity: 0.5;
+        }
+
+        .player-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .player-name {
+            font-weight: 500;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            max-width: 100%;
+        }
+
+        .player-name-text {
+            max-width: 80px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: normal;
+            font-weight: bold;
+            word-break: break-word;
+            line-height: 1.2;
+        }
+
+        .player-level-pool {
+            display: inline-block;
+            min-width: 32px;
+            height: 20px;
+            border-radius: 10px;
+            text-align: center;
+            line-height: 20px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+
+        .player-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .add-player-btn {
+            width: 100%;
+            margin-top: 8px;
+            padding: 8px 12px;
+            font-size: 0.75rem;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, var(--success-color), #146c43);
+            border: none;
+            color: white;
+            border-radius: 6px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .add-player-btn:hover {
+            background: linear-gradient(135deg, #146c43, var(--success-color));
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .add-player-btn.no-players {
+            margin-top: 0;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+        }
+
+        .add-player-btn.dynamic-position {
+            position: relative;
+            margin-top: 0;
+            top: auto;
+            left: auto;
+            transform: none;
+            width: 100%;
+        }
+
+        .clear-btn {
+            background-color: transparent;
+            border: 1px solid var(--danger-color);
+            color: var(--danger-color);
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .clear-btn:hover {
+            background-color: var(--danger-color);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .generate-btn {
+            background-color: transparent;
+            border: 1px solid #9b59b6;
+            color: #9b59b6;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .generate-btn:hover {
+            background-color: #9b59b6;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .save-formation-btn {
+            background-color: transparent;
+            border: 1px solid #20c997;
+            color: #20c997;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .save-formation-btn:hover {
+            background-color: #20c997;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .schedule-btn {
+            background-color: transparent;
+            border: 1px solid #fd7e14;
+            color: #fd7e14;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .schedule-btn:hover {
+            background-color: #fd7e14;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .import-export-btn {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+
+        .add-team-btn {
+            background-color: transparent;
+            border: 1px solid var(--success-color);
+            color: var(--success-color);
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .add-team-btn:hover {
+            background-color: var(--success-color);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .sort-select {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            background-color: white;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+
+        .tooltip-inner {
+            font-size: 0.7rem;
+        }
+        
+        /* 自定义模态框样式 */
+        .custom-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1050;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .custom-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .custom-modal-content {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+        
+        .custom-modal.show .custom-modal-content {
+            transform: translateY(0);
+        }
+        
+        .custom-modal-header {
+            padding: 20px 24px 0;
+            border-bottom: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .custom-modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #343a40;
+            margin: 0;
+        }
+        
+        .custom-modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #6c757d;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .custom-modal-close:hover {
+            color: #343a40;
+        }
+        
+        .custom-modal-body {
+            padding: 24px;
+        }
+        
+        .custom-modal-footer {
+            padding: 0 24px 24px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+        
+        .custom-input-group {
+            margin-bottom: 20px;
+        }
+        
+        .custom-input-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        .custom-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s;
+            box-sizing: border-box;
+        }
+        
+        .custom-input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+        }
+        
+        .custom-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236c757d' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 16px;
+        }
+        
+        .custom-select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+        }
+        
+        .custom-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .custom-btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .custom-btn-primary:hover {
+            background-color: #0b5ed7;
+            transform: translateY(-1px);
+        }
+        
+        .custom-btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .custom-btn-secondary:hover {
+            background-color: #5c636a;
+            transform: translateY(-1px);
+        }
+        
+        .player-identity {
+            font-size: 0.6rem;
+            font-weight: bold;
+            padding: 1px 4px;
+            border-radius: 4px;
+            margin-left: 4px;
+        }
+        
+        .identity-队长 {
+            background-color: #ffd700;
+            color: #8b6914;
+        }
+        
+        .identity-队员 {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        /* 赛程界面样式 */
+        .schedule-container {
+            max-height: 60vh;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .schedule-item {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border: 1px solid #dee2e6;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: all 0.3s ease;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .schedule-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+        }
+
+        .schedule-match {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .schedule-team {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        .schedule-team.home {
+            justify-content: flex-start;
+        }
+
+        .schedule-team.away {
+            justify-content: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .schedule-result {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            margin: 0 12px;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .result-win {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .result-lose {
+            background: linear-gradient(135deg, #dc3545, #e83e8c);
+            color: white;
+        }
+
+        .result-draw {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            color: white;
+        }
+
+        .schedule-team-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #495057;
+            margin: 0 8px;
+        }
+
+        .schedule-score {
+            font-weight: bold;
+            font-size: 1.3rem;
+            color: #212529;
+            background: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .schedule-datetime {
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.9rem;
+            padding: 8px 0;
+            border-top: 1px solid #e9ecef;
+            margin-top: 8px;
+        }
+
+        .schedule-actions {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            display: flex;
+            gap: 8px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .schedule-item:hover .schedule-actions {
+            opacity: 1;
+        }
+
+        .schedule-action-btn {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .schedule-action-btn.edit {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .schedule-action-btn.edit:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .schedule-action-btn.delete {
+            color: var(--danger-color);
+            border-color: var(--danger-color);
+        }
+
+        .schedule-action-btn.delete:hover {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .add-schedule-btn {
+            width: 100%;
+            margin-top: 16px;
+            padding: 12px;
+            font-size: 0.9rem;
+            background: linear-gradient(135deg, var(--primary-color), #0b5ed7);
+            border: none;
+            color: white;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .add-schedule-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+        }
+
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            gap: 16px;
+        }
+
+        .pagination-btn {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination-info {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 主要内容区域 -->
+    <div class="content-wrapper">
+        <div class="container my-3">
+            <div class="main-content">
+                <!-- 第一行：网页标题 -->
+                <div class="text-center mb-3">
+                    <h1 class="display-6 fw-bold text-primary">英雄联盟阵容系统</h1>
+                </div>
+
+                <!-- 导入导出区域 -->
+                <div class="import-export-area">
+                    <button class="btn btn-success import-export-btn" id="importBtn">
+                        导入阵容
+                    </button>
+                    <button class="btn btn-primary import-export-btn" id="exportBtn">
+                        导出阵容
+                    </button>
+                    <input type="file" id="importFile" accept=".json" style="display: none;">
+                </div>
+
+                <!-- 阵容列表区域 -->
+                <div class="formation-list-area">
+                    <div class="area-header">
+                        <div class="area-title">
+                            <h5 class="mb-0 fw-bold" style="font-size: 1rem;">📋 阵容列表</h5>
+                        </div>
+                    </div>
+                    <div class="formation-tags" id="formationTags">
+                        <!-- 阵容标签将在这里动态生成 -->
+                    </div>
+                </div>
+
+                <!-- 队伍区域 -->
+                <div class="team-area">
+                    <div class="area-header">
+                        <div class="area-title">
+                            <h5 class="mb-0 fw-bold" style="font-size: 1rem;">🏆 队伍阵容（每队5人）</h5>
+                        </div>
+                        <div class="area-actions">
+                            <select class="sort-select" id="sortSelect">
+                                <option value="none">无排序</option>
+                                <option value="position">位置排序</option>
+                            </select>
+                            <button class="btn add-team-btn" id="addTeamBtn">
+                                ➕ 添加队伍
+                            </button>
+                            <button class="btn save-formation-btn" id="saveFormationBtn">
+                                💾 保存阵容
+                            </button>
+                            <button class="btn schedule-btn" id="scheduleBtn">
+                                📅 赛程
+                            </button>
+                            <button class="btn generate-btn" id="generateTeamBtn">
+                                ⚡ 生成阵容
+                            </button>
+                            <button class="btn clear-btn" id="clearAllBtn">
+                                🗑️ 清空
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 队伍列表 -->
+                    <div class="teams-container" id="teamsContainer">
+                        <div class="loading">正在加载队伍数据...</div>
+                    </div>
+                </div>
+
+                <!-- 选手池区域 -->
+                <div class="player-pool-area">
+                    <div class="area-header">
+                        <div class="area-title">
+                            <h5 class="mb-0 fw-bold" style="font-size: 1rem;">👥 选手池</h5>
+                        </div>
+                    </div>
+
+                    <!-- 5列选手布局 -->
+                    <div class="positions-container" id="positionsContainer">
+                        <div class="loading">正在加载选手数据...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部版权信息 -->
+    <div class="copyright">
+        <div class="container">
+            <p class="mb-0" style="font-size: 0.9rem;">Developed With DeepSeek、Bootstrap</p>
+        </div>
+    </div>
+
+    <!-- 自定义模态框 -->
+    <div class="custom-modal" id="customModal">
+        <div class="custom-modal-content">
+            <div class="custom-modal-header">
+                <h4 class="custom-modal-title" id="modalTitle">标题</h4>
+                <button type="button" class="custom-modal-close" id="modalCloseBtn">&times;</button>
+            </div>
+            <div class="custom-modal-body">
+                <div class="custom-input-group">
+                    <label class="custom-input-label" id="inputLabel">请输入内容：</label>
+                    <input type="text" class="custom-input" id="modalInput" placeholder="输入内容...">
+                </div>
+                <div class="custom-input-group" id="selectGroup" style="display: none;">
+                    <label class="custom-input-label" id="selectLabel">请选择：</label>
+                    <select class="custom-select" id="modalSelect">
+                        <option value="凡人">凡人</option>
+                        <option value="炼气">炼气</option>
+                        <option value="筑基">筑基</option>
+                        <option value="结丹">结丹</option>
+                        <option value="元婴">元婴</option>
+                        <option value="化神">化神</option>
+                        <option value="炼虚">炼虚</option>
+                        <option value="合体">合体</option>
+                        <option value="大乘">大乘</option>
+                    </select>
+                </div>
+                <div class="custom-input-group" id="identityGroup" style="display: none;">
+                    <label class="custom-input-label" id="identityLabel">请选择身份：</label>
+                    <select class="custom-select" id="modalIdentity">
+                        <option value="队员">队员</option>
+                        <option value="队长">队长</option>
+                    </select>
+                </div>
+            </div>
+            <div class="custom-modal-footer">
+                <button type="button" class="custom-btn custom-btn-secondary" id="modalCancelBtn">取消</button>
+                <button type="button" class="custom-btn custom-btn-primary" id="modalConfirmBtn">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 赛程模态框 -->
+    <div class="custom-modal" id="scheduleModal">
+        <div class="custom-modal-content">
+            <div class="custom-modal-header">
+                <h4 class="custom-modal-title">📅 赛程管理</h4>
+                <button type="button" class="custom-modal-close" id="scheduleModalCloseBtn">&times;</button>
+            </div>
+            <div class="custom-modal-body">
+                <div class="schedule-container" id="scheduleContainer">
+                    <!-- 赛程项目将在这里动态生成 -->
+                </div>
+                <div class="pagination-container" id="paginationContainer">
+                    <!-- 分页控件将在这里动态生成 -->
+                </div>
+                <button class="btn add-schedule-btn" id="addScheduleBtn">
+                    ➕ 添加对阵
+                </button>
+            </div>
+            <div class="custom-modal-footer">
+                <button type="button" class="custom-btn custom-btn-secondary" id="scheduleModalCancelBtn">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 等待DOM完全加载
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('DOM loaded, initializing app...');
+
+            // 默认数据
+            const defaultTeams = [
+                { id: 1, name: "1队", color: "#dc3545", members: [] },
+                { id: 2, name: "2队", color: "#0d6efd", members: [] },
+                { id: 3, name: "3队", color: "#198754", members: [] },
+                { id: 4, name: "4队", color: "#fd7e14", members: [] },
+                { id: 5, name: "5队", color: "#6f42c1", members: [] },
+                { id: 6, name: "6队", color: "#20c997", members: [] },
+                { id: 7, name: "7队", color: "#e83e8c", members: [] }
+            ];
+
+            const defaultPlayersByPosition = {
+                "上单": [
+                    { id: 1, name: "小捏", position: "上单", level: "筑基", identity: "队员" },
+                    { id: 2, name: "米勒", position: "上单", level: "筑基", identity: "队员" },
+                    { id: 3, name: "呆呆", position: "上单", level: "筑基", identity: "队员" },
+                    { id: 4, name: "宸宇", position: "上单", level: "筑基", identity: "队员" },
+                    { id: 5, name: "祥麟", position: "上单", level: "筑基", identity: "队员" },
+                    { id: 6, name: "Langx", position: "上单", level: "元婴", identity: "队长" },
+                    { id: 7, name: "957", position: "上单", level: "元婴", identity: "队长" }
+                ],
+                "打野": [
+                    { id: 8, name: "赵俊日", position: "打野", level: "筑基", identity: "队员" },
+                    { id: 9, name: "管泽元", position: "打野", level: "筑基", identity: "队员" },
+                    { id: 10, name: "友浩", position: "打野", level: "筑基", identity: "队员" },
+                    { id: 11, name: "张硕", position: "打野", level: "筑基", identity: "队员" },
+                    { id: 12, name: "乐乐", position: "打野", level: "筑基", identity: "队员" },
+                    { id: 13, name: "Fireloli", position: "打野", level: "元婴", identity: "队长" },
+                    { id: 14, name: "Hacker", position: "打野", level: "元婴", identity: "队长" }
+                ],
+                "中单": [
+                    { id: 15, name: "乘风儿", position: "中单", level: "筑基", identity: "队员" },
+                    { id: 16, name: "王淞", position: "中单", level: "筑基", identity: "队员" },
+                    { id: 17, name: "Ning", position: "中单", level: "筑基", identity: "队员" },
+                    { id: 18, name: "小伞", position: "中单", level: "筑基", identity: "队员" },
+                    { id: 19, name: "Zonic", position: "中单", level: "筑基", identity: "队员" },
+                    { id: 20, name: "Doby", position: "中单", level: "筑基", identity: "队员" },
+                    { id: 21, name: "Xiye", position: "中单", level: "元婴", identity: "队长" }
+                ],
+                "射手": [
+                    { id: 22, name: "宝蓝", position: "射手", level: "筑基", identity: "队员" },
+                    { id: 23, name: "毛毛", position: "射手", level: "筑基", identity: "队员" },
+                    { id: 24, name: "Suki", position: "射手", level: "筑基", identity: "队员" },
+                    { id: 25, name: "怀南", position: "射手", level: "筑基", identity: "队员" },
+                    { id: 26, name: "瞳夕", position: "射手", level: "筑基", identity: "队员" },
+                    { id: 27, name: "Mage", position: "射手", level: "筑基", identity: "队员" },
+                    { id: 28, name: "雨凡", position: "射手", level: "筑基", identity: "队员" }
+                ],
+                "辅助": [
+                    { id: 29, name: "十月", position: "辅助", level: "筑基", identity: "队员" },
+                    { id: 30, name: "周敢敢", position: "辅助", level: "筑基", identity: "队员" },
+                    { id: 31, name: "阿芙", position: "辅助", level: "筑基", identity: "队员" },
+                    { id: 32, name: "Kinko", position: "辅助", level: "筑基", identity: "队员" },
+                    { id: 33, name: "Cryin", position: "辅助", level: "筑基", identity: "队员" },
+                    { id: 34, name: "Pyl", position: "辅助", level: "元婴", identity: "队长" },
+                    { id: 35, name: "Doinb", position: "辅助", level: "元婴", identity: "队长" }
+                ]
+            };
+
+            // 等级权重映射（用于计算队伍实力）
+            const levelWeights = {
+                "凡人": 1,
+                "炼气": 2,
+                "筑基": 3,
+                "结丹": 4,
+                "元婴": 5,
+                "化神": 6,
+                "炼虚": 7,
+                "合体": 8,
+                "大乘": 9
+            };
+
+            // 位置简写映射
+            const positionAbbr = {
+                "上单": "上",
+                "打野": "野",
+                "中单": "中",
+                "射手": "射",
+                "辅助": "辅"
+            };
+
+            // 位置顺序
+            const positionOrder = ["上单", "打野", "中单", "射手", "辅助"];
+
+            // 当前数据
+            let teams = JSON.parse(JSON.stringify(defaultTeams));
+            let playersByPosition = JSON.parse(JSON.stringify(defaultPlayersByPosition));
+
+            // 阵容列表数据
+            let formations = [];
+            let currentFormationId = null;
+            let nextFormationId = 1;
+
+            // 排序方式
+            let sortMethod = 'none'; // 'none' 或 'position'
+
+            // 赛程数据
+            let schedules = [];
+            let nextScheduleId = 1;
+
+            // 分页相关
+            let currentPage = 1;
+            const itemsPerPage = 5;
+
+            // 导入数据备份
+            let importedData = null;
+
+            const positionColors = {
+                "上单": "position-top",
+                "打野": "position-jungle",
+                "中单": "position-mid",
+                "射手": "position-adc",
+                "辅助": "position-support"
+            };
+
+            let nextPlayerId = 36;
+            let nextTeamId = 8;
+
+            // 自定义模态框相关变量
+            let modalResolve = null;
+            let modalReject = null;
+            const modal = document.getElementById('customModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalInput = document.getElementById('modalInput');
+            const modalSelect = document.getElementById('modalSelect');
+            const modalIdentity = document.getElementById('modalIdentity');
+            const inputLabel = document.getElementById('inputLabel');
+            const selectGroup = document.getElementById('selectGroup');
+            const identityGroup = document.getElementById('identityGroup');
+            const selectLabel = document.getElementById('selectLabel');
+            const identityLabel = document.getElementById('identityLabel');
+            const modalCloseBtn = document.getElementById('modalCloseBtn');
+            const modalCancelBtn = document.getElementById('modalCancelBtn');
+            const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+
+            // 赛程模态框相关变量
+            const scheduleModal = document.getElementById('scheduleModal');
+            const scheduleModalCloseBtn = document.getElementById('scheduleModalCloseBtn');
+            const scheduleModalCancelBtn = document.getElementById('scheduleModalCancelBtn');
+            const scheduleContainer = document.getElementById('scheduleContainer');
+            const paginationContainer = document.getElementById('paginationContainer');
+            const addScheduleBtn = document.getElementById('addScheduleBtn');
+
+            // 自定义提示框函数
+            function customPrompt(title, label, defaultValue = '', type = 'text') {
+                return new Promise((resolve, reject) => {
+                    modalResolve = resolve;
+                    modalReject = reject;
+                    
+                    modalTitle.textContent = title;
+                    inputLabel.textContent = label;
+                    modalInput.value = defaultValue;
+                    
+                    // 根据类型显示/隐藏不同的输入控件
+                    if (type === 'text') {
+                        modalInput.style.display = 'block';
+                        selectGroup.style.display = 'none';
+                        identityGroup.style.display = 'none';
+                    } else if (type === 'select') {
+                        modalInput.style.display = 'none';
+                        selectGroup.style.display = 'block';
+                        identityGroup.style.display = 'none';
+                        modalSelect.value = defaultValue;
+                    } else if (type === 'identity') {
+                        modalInput.style.display = 'none';
+                        selectGroup.style.display = 'none';
+                        identityGroup.style.display = 'block';
+                        modalIdentity.value = defaultValue;
+                    }
+                    
+                    modal.classList.add('show');
+                    modalInput.focus();
+                });
+            }
+
+            // 关闭模态框
+            function closeModal() {
+                modal.classList.remove('show');
+                if (modalReject) {
+                    modalReject('用户取消');
+                    modalResolve = null;
+                    modalReject = null;
+                }
+            }
+
+            // 确认模态框输入
+            function confirmModal() {
+                let value;
+                if (modalInput.style.display === 'block') {
+                    value = modalInput.value.trim();
+                } else if (selectGroup.style.display === 'block') {
+                    value = modalSelect.value;
+                } else if (identityGroup.style.display === 'block') {
+                    value = modalIdentity.value;
+                }
+                
+                if (modalResolve) {
+                    modalResolve(value);
+                    modalResolve = null;
+                    modalReject = null;
+                }
+                closeModal();
+            }
+
+            // 绑定模态框事件
+            modalCloseBtn.addEventListener('click', closeModal);
+            modalCancelBtn.addEventListener('click', closeModal);
+            modalConfirmBtn.addEventListener('click', confirmModal);
+
+            // 点击模态框外部关闭
+            modal.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    closeModal();
+                }
+            });
+
+            // 按Enter确认，按Esc取消
+            modalInput.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter') {
+                    confirmModal();
+                } else if (event.key === 'Escape') {
+                    closeModal();
+                }
+            });
+
+            modalSelect.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter') {
+                    confirmModal();
+                } else if (event.key === 'Escape') {
+                    closeModal();
+                }
+            });
+
+            modalIdentity.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter') {
+                    confirmModal();
+                } else if (event.key === 'Escape') {
+                    closeModal();
+                }
+            });
+
+            // 赛程模态框事件
+            scheduleModalCloseBtn.addEventListener('click', closeScheduleModal);
+            scheduleModalCancelBtn.addEventListener('click', closeScheduleModal);
+            addScheduleBtn.addEventListener('click', addSchedule);
+
+            // 点击赛程模态框外部关闭
+            scheduleModal.addEventListener('click', function(event) {
+                if (event.target === scheduleModal) {
+                    closeScheduleModal();
+                }
+            });
+
+            // 关闭赛程模态框
+            function closeScheduleModal() {
+                scheduleModal.classList.remove('show');
+            }
+
+            // 打开赛程模态框
+            function openScheduleModal() {
+                currentPage = 1;
+                renderSchedules();
+                scheduleModal.classList.add('show');
+            }
+
+            // 初始化应用
+            function initApp() {
+                console.log('Initializing app...');
+                renderTeams();
+                renderPlayerPool();
+                renderFormationTags();
+                bindEvents();
+                console.log('App initialized successfully');
+            }
+
+            // 渲染队伍
+            function renderTeams() {
+                const teamsContainer = document.getElementById('teamsContainer');
+                teamsContainer.innerHTML = '';
+
+                teams.forEach(team => {
+                    const teamCard = document.createElement('div');
+                    teamCard.className = 'team-card';
+                    teamCard.dataset.teamId = team.id;
+                    teamCard.style.borderTop = `4px solid ${team.color}`;
+
+                    // 队伍头部
+                    const teamHeader = document.createElement('div');
+                    teamHeader.className = 'team-header';
+
+                    const teamInfo = document.createElement('div');
+                    teamInfo.className = 'team-info';
+
+                    const teamNumber = document.createElement('div');
+                    teamNumber.className = 'team-number';
+                    teamNumber.textContent = team.id;
+
+                    const teamName = document.createElement('span');
+                    teamName.className = 'team-name';
+                    teamName.textContent = team.name;
+
+                    const teamActions = document.createElement('div');
+                    teamActions.className = 'team-actions';
+
+                    const editBtn = document.createElement('button');
+                    editBtn.className = 'btn btn-outline-primary btn-xs btn-icon';
+                    editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+                    editBtn.title = '修改队伍名称';
+                    editBtn.onclick = () => editTeamName(team.id);
+
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'btn btn-outline-danger btn-xs btn-icon';
+                    removeBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                    removeBtn.title = '删除队伍';
+                    removeBtn.onclick = () => removeTeam(team.id);
+
+                    teamInfo.appendChild(teamNumber);
+                    teamInfo.appendChild(teamName);
+                    teamActions.appendChild(editBtn);
+                    teamActions.appendChild(removeBtn);
+                    teamHeader.appendChild(teamInfo);
+                    teamHeader.appendChild(teamActions);
+
+                    // 队伍成员区域
+                    const teamMembers = document.createElement('div');
+                    teamMembers.className = 'team-members';
+
+                    // 根据排序方式渲染成员
+                    let membersToRender = [...team.members];
+                    
+                    if (sortMethod === 'position') {
+                        // 位置排序
+                        membersToRender.sort((a, b) => {
+                            return positionOrder.indexOf(a.position) - positionOrder.indexOf(b.position);
+                        });
+                    }
+                    // 无排序：保持原有顺序
+
+                    // 清空现有成员显示
+                    teamMembers.innerHTML = '';
+
+                    // 显示现有成员
+                    if (membersToRender.length === 0) {
+                        // 如果没有成员，显示5个空位
+                        for (let i = 0; i < 5; i++) {
+                            const emptySlot = document.createElement('div');
+                            emptySlot.className = 'empty-slot';
+                            emptySlot.textContent = '空位';
+                            emptySlot.dataset.position = positionOrder[i];
+                            teamMembers.appendChild(emptySlot);
+                        }
+                    } else {
+                        // 显示现有成员
+                        membersToRender.forEach(member => {
+                            const memberItem = createMemberItem(member, team.id);
+                            teamMembers.appendChild(memberItem);
+                        });
+                        
+                        // 补充空位
+                        const remainingSlots = 5 - membersToRender.length;
+                        for (let i = 0; i < remainingSlots; i++) {
+                            const emptySlot = document.createElement('div');
+                            emptySlot.className = 'empty-slot';
+                            emptySlot.textContent = '空位';
+                            emptySlot.dataset.position = positionOrder[membersToRender.length + i];
+                            teamMembers.appendChild(emptySlot);
+                        }
+                    }
+
+                    teamCard.appendChild(teamHeader);
+                    teamCard.appendChild(teamMembers);
+                    teamsContainer.appendChild(teamCard);
+                });
+
+                // 启用拖放功能
+                enableDragAndDrop();
+            }
+
+            // 创建成员项
+            function createMemberItem(member, teamId) {
+                const memberItem = document.createElement('div');
+                memberItem.className = 'member-item';
+                memberItem.draggable = true;
+                memberItem.dataset.playerId = member.id;
+                memberItem.dataset.position = member.position;
+                memberItem.dataset.teamId = teamId;
+
+                const memberLeft = document.createElement('div');
+                memberLeft.className = 'member-left';
+
+                const playerNameContainer = document.createElement('div');
+                playerNameContainer.className = 'player-name-container';
+
+                const playerNameStatic = document.createElement('div');
+                playerNameStatic.className = 'player-name-static';
+                playerNameStatic.textContent = member.name;
+                
+                // 添加身份标识
+                if (member.identity === '队长') {
+                    const identityTag = document.createElement('span');
+                    identityTag.className = `player-identity identity-${member.identity}`;
+                    identityTag.textContent = member.identity;
+                    playerNameStatic.appendChild(identityTag);
+                }
+
+                playerNameContainer.appendChild(playerNameStatic);
+                memberLeft.appendChild(playerNameContainer);
+
+                const memberRight = document.createElement('div');
+                memberRight.className = 'member-right';
+
+                const positionAndLevel = document.createElement('div');
+                positionAndLevel.className = 'position-and-level';
+
+                const positionTag = document.createElement('span');
+                positionTag.className = 'position-tag';
+                positionTag.style.backgroundColor = getPositionColor(member.position);
+                positionTag.textContent = positionAbbr[member.position];
+
+                const playerLevel = document.createElement('span');
+                playerLevel.className = `player-level level-${member.level}`;
+                playerLevel.textContent = member.level;
+
+                positionAndLevel.appendChild(positionTag);
+                positionAndLevel.appendChild(playerLevel);
+
+                const memberActions = document.createElement('div');
+                memberActions.className = 'member-actions';
+
+                const levelBtn = document.createElement('button');
+                levelBtn.className = 'btn btn-outline-warning btn-xs btn-icon';
+                levelBtn.innerHTML = '<i class="fas fa-chart-line"></i>';
+                levelBtn.title = '修改等级';
+                levelBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    changePlayerLevel(member.id, teamId);
+                };
+
+                const identityBtn = document.createElement('button');
+                identityBtn.className = 'btn btn-outline-info btn-xs btn-icon';
+                identityBtn.innerHTML = '<i class="fas fa-user-tie"></i>';
+                identityBtn.title = member.identity === '队长' ? '取消队长' : '指定为队长';
+                identityBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    togglePlayerIdentity(member.id, teamId);
+                };
+
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'btn btn-outline-danger btn-xs btn-icon';
+                removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                removeBtn.title = '移除选手';
+                removeBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    removePlayerFromTeam(member.id, teamId);
+                };
+
+                memberActions.appendChild(identityBtn);
+                memberActions.appendChild(levelBtn);
+                memberActions.appendChild(removeBtn);
+
+                memberRight.appendChild(positionAndLevel);
+                memberRight.appendChild(memberActions);
+
+                memberItem.appendChild(memberLeft);
+                memberItem.appendChild(memberRight);
+
+                return memberItem;
+            }
+
+            // 获取位置颜色
+            function getPositionColor(position) {
+                const colors = {
+                    "上单": "#dc3545",
+                    "打野": "#198754",
+                    "中单": "#0d6efd",
+                    "射手": "#6f42c1",
+                    "辅助": "#fd7e14"
+                };
+                return colors[position] || "#6c757d";
+            }
+
+            // 渲染选手池
+            function renderPlayerPool() {
+                const positionsContainer = document.getElementById('positionsContainer');
+                positionsContainer.innerHTML = '';
+
+                positionOrder.forEach(position => {
+                    const positionColumn = document.createElement('div');
+                    positionColumn.className = 'position-column';
+
+                    const positionTitle = document.createElement('div');
+                    positionTitle.className = `position-title ${positionColors[position]}`;
+                    positionTitle.textContent = position;
+
+                    const positionPlayers = document.createElement('div');
+                    positionPlayers.className = 'position-players';
+                    positionPlayers.dataset.position = position;
+
+                    const players = playersByPosition[position] || [];
+                    if (players.length === 0) {
+                        positionPlayers.classList.add('empty');
+                    }
+
+                    players.forEach(player => {
+                        const playerItem = createPlayerItem(player);
+                        positionPlayers.appendChild(playerItem);
+                    });
+
+                    // 添加选手按钮
+                    const addPlayerBtn = document.createElement('button');
+                    addPlayerBtn.className = players.length === 0 ? 'add-player-btn no-players' : 'add-player-btn dynamic-position';
+                    addPlayerBtn.innerHTML = '<i class="fas fa-plus"></i> 添加选手';
+                    addPlayerBtn.onclick = () => addPlayerToPosition(position);
+
+                    positionColumn.appendChild(positionTitle);
+                    positionColumn.appendChild(positionPlayers);
+                    positionColumn.appendChild(addPlayerBtn);
+                    positionsContainer.appendChild(positionColumn);
+                });
+
+                // 启用拖放功能
+                enableDragAndDrop();
+            }
+
+            // 创建选手项
+            function createPlayerItem(player) {
+                const playerItem = document.createElement('div');
+                playerItem.className = 'player-item';
+                playerItem.draggable = true;
+                playerItem.dataset.playerId = player.id;
+                playerItem.dataset.position = player.position;
+
+                const playerHeader = document.createElement('div');
+                playerHeader.className = 'player-header';
+
+                const playerName = document.createElement('div');
+                playerName.className = 'player-name';
+
+                const playerNameText = document.createElement('span');
+                playerNameText.className = 'player-name-text';
+                playerNameText.textContent = player.name;
+
+                const playerLevel = document.createElement('span');
+                playerLevel.className = `player-level-pool level-${player.level}`;
+                playerLevel.textContent = player.level;
+
+                // 添加身份标识
+                if (player.identity === '队长') {
+                    const identityTag = document.createElement('span');
+                    identityTag.className = `player-identity identity-${player.identity}`;
+                    identityTag.textContent = player.identity;
+                    playerNameText.appendChild(identityTag);
+                }
+
+                playerName.appendChild(playerNameText);
+                playerName.appendChild(playerLevel);
+
+                const playerActions = document.createElement('div');
+                playerActions.className = 'player-actions';
+
+                const levelBtn = document.createElement('button');
+                levelBtn.className = 'btn btn-outline-warning btn-xs btn-icon';
+                levelBtn.innerHTML = '<i class="fas fa-chart-line"></i>';
+                levelBtn.title = '修改等级';
+                levelBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    changePlayerLevel(player.id);
+                };
+
+                const identityBtn = document.createElement('button');
+                identityBtn.className = 'btn btn-outline-info btn-xs btn-icon';
+                identityBtn.innerHTML = '<i class="fas fa-user-tie"></i>';
+                identityBtn.title = player.identity === '队长' ? '取消队长' : '指定为队长';
+                identityBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    togglePlayerIdentity(player.id);
+                };
+
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'btn btn-outline-danger btn-xs btn-icon';
+                removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                removeBtn.title = '删除选手';
+                removeBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    removePlayerFromPool(player.id, player.position);
+                };
+
+                playerActions.appendChild(identityBtn);
+                playerActions.appendChild(levelBtn);
+                playerActions.appendChild(removeBtn);
+
+                playerHeader.appendChild(playerName);
+                playerHeader.appendChild(playerActions);
+
+                playerItem.appendChild(playerHeader);
+
+                return playerItem;
+            }
+
+            // 渲染阵容标签
+            function renderFormationTags() {
+                const formationTags = document.getElementById('formationTags');
+                formationTags.innerHTML = '';
+
+                formations.forEach(formation => {
+                    const tag = document.createElement('div');
+                    tag.className = `formation-tag ${formation.id === currentFormationId ? 'active' : ''}`;
+                    tag.dataset.formationId = formation.id;
+
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'formation-tag-name';
+                    nameSpan.textContent = formation.name;
+
+                    const actions = document.createElement('div');
+                    actions.className = 'formation-tag-actions';
+
+                    const editBtn = document.createElement('button');
+                    editBtn.className = 'formation-tag-btn';
+                    editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+                    editBtn.title = '修改名称';
+                    editBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        editFormationName(formation.id);
+                    };
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'formation-tag-btn';
+                    deleteBtn.innerHTML = '<i class="fas fa-times"></i>';
+                    deleteBtn.title = '删除阵容';
+                    deleteBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        deleteFormation(formation.id);
+                    };
+
+                    actions.appendChild(editBtn);
+                    actions.appendChild(deleteBtn);
+
+                    tag.appendChild(nameSpan);
+                    tag.appendChild(actions);
+
+                    tag.addEventListener('click', () => {
+                        switchFormation(formation.id);
+                    });
+
+                    formationTags.appendChild(tag);
+                });
+            }
+
+            // 渲染赛程
+            function renderSchedules() {
+                scheduleContainer.innerHTML = '';
+
+                if (schedules.length === 0) {
+                    const emptyMessage = document.createElement('div');
+                    emptyMessage.className = 'text-center text-muted py-4';
+                    emptyMessage.textContent = '暂无赛程安排';
+                    scheduleContainer.appendChild(emptyMessage);
+                    renderPagination();
+                    return;
+                }
+
+                // 计算分页
+                const startIndex = (currentPage - 1) * itemsPerPage;
+                const endIndex = Math.min(startIndex + itemsPerPage, schedules.length);
+                const currentSchedules = schedules.slice(startIndex, endIndex);
+
+                currentSchedules.forEach(schedule => {
+                    const scheduleItem = document.createElement('div');
+                    scheduleItem.className = 'schedule-item';
+
+                    // 解析比分
+                    const [homeScore, awayScore] = schedule.score.split('-').map(Number);
+                    
+                    // 确定胜负结果
+                    let homeResult, awayResult;
+                    if (homeScore > awayScore) {
+                        homeResult = 'win';
+                        awayResult = 'lose';
+                    } else if (homeScore < awayScore) {
+                        homeResult = 'lose';
+                        awayResult = 'win';
+                    } else {
+                        homeResult = 'draw';
+                        awayResult = 'draw';
+                    }
+
+                    // 对阵信息
+                    const scheduleMatch = document.createElement('div');
+                    scheduleMatch.className = 'schedule-match';
+
+                    // 主队信息
+                    const homeTeam = document.createElement('div');
+                    homeTeam.className = 'schedule-team home';
+
+                    const homeResultDiv = document.createElement('div');
+                    homeResultDiv.className = `schedule-result result-${homeResult}`;
+                    homeResultDiv.textContent = homeResult === 'win' ? '胜' : homeResult === 'lose' ? '负' : '平';
+
+                    const homeName = document.createElement('div');
+                    homeName.className = 'schedule-team-name';
+                    homeName.textContent = schedule.team1;
+
+                    homeTeam.appendChild(homeResultDiv);
+                    homeTeam.appendChild(homeName);
+
+                    // 比分
+                    const scoreDiv = document.createElement('div');
+                    scoreDiv.className = 'schedule-score';
+                    scoreDiv.textContent = schedule.score;
+
+                    // 客队信息
+                    const awayTeam = document.createElement('div');
+                    awayTeam.className = 'schedule-team away';
+
+                    const awayResultDiv = document.createElement('div');
+                    awayResultDiv.className = `schedule-result result-${awayResult}`;
+                    awayResultDiv.textContent = awayResult === 'win' ? '胜' : awayResult === 'lose' ? '负' : '平';
+
+                    const awayName = document.createElement('div');
+                    awayName.className = 'schedule-team-name';
+                    awayName.textContent = schedule.team2;
+
+                    awayTeam.appendChild(awayName);
+                    awayTeam.appendChild(awayResultDiv);
+
+                    scheduleMatch.appendChild(homeTeam);
+                    scheduleMatch.appendChild(scoreDiv);
+                    scheduleMatch.appendChild(awayTeam);
+
+                    // 比赛时间
+                    const datetimeDiv = document.createElement('div');
+                    datetimeDiv.className = 'schedule-datetime';
+                    datetimeDiv.textContent = schedule.datetime;
+
+                    // 操作按钮
+                    const actionsDiv = document.createElement('div');
+                    actionsDiv.className = 'schedule-actions';
+
+                    const editBtn = document.createElement('button');
+                    editBtn.className = 'schedule-action-btn edit';
+                    editBtn.innerHTML = '<i class="fas fa-edit"></i> 编辑';
+                    editBtn.onclick = () => editSchedule(schedule.id);
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'schedule-action-btn delete';
+                    deleteBtn.innerHTML = '<i class="fas fa-trash"></i> 删除';
+                    deleteBtn.onclick = () => deleteSchedule(schedule.id);
+
+                    actionsDiv.appendChild(editBtn);
+                    actionsDiv.appendChild(deleteBtn);
+
+                    scheduleItem.appendChild(scheduleMatch);
+                    scheduleItem.appendChild(datetimeDiv);
+                    scheduleItem.appendChild(actionsDiv);
+
+                    scheduleContainer.appendChild(scheduleItem);
+                });
+
+                renderPagination();
+            }
+
+            // 渲染分页控件
+            function renderPagination() {
+                paginationContainer.innerHTML = '';
+
+                if (schedules.length <= itemsPerPage) {
+                    return;
+                }
+
+                const totalPages = Math.ceil(schedules.length / itemsPerPage);
+
+                const prevBtn = document.createElement('button');
+                prevBtn.className = 'pagination-btn';
+                prevBtn.innerHTML = '‹ 上一页';
+                prevBtn.disabled = currentPage === 1;
+                prevBtn.onclick = () => {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        renderSchedules();
+                    }
+                };
+
+                const nextBtn = document.createElement('button');
+                nextBtn.className = 'pagination-btn';
+                nextBtn.innerHTML = '下一页 ›';
+                nextBtn.disabled = currentPage === totalPages;
+                nextBtn.onclick = () => {
+                    if (currentPage < totalPages) {
+                        currentPage++;
+                        renderSchedules();
+                    }
+                };
+
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'pagination-info';
+                infoDiv.textContent = `第 ${currentPage} 页，共 ${totalPages} 页`;
+
+                paginationContainer.appendChild(prevBtn);
+                paginationContainer.appendChild(infoDiv);
+                paginationContainer.appendChild(nextBtn);
+            }
+
+            // 添加赛程
+            async function addSchedule() {
+                try {
+                    // 获取当前所有队伍名称
+                    const teamNames = teams.map(team => team.name).filter(name => name);
+                    
+                    if (teamNames.length < 2) {
+                        alert('至少需要两个队伍才能创建对阵！');
+                        return;
+                    }
+
+                    // 随机选择两个不同的队伍
+                    let team1, team2;
+                    do {
+                        team1 = teamNames[Math.floor(Math.random() * teamNames.length)];
+                        team2 = teamNames[Math.floor(Math.random() * teamNames.length)];
+                    } while (team1 === team2);
+
+                    // 生成随机比分
+                    const homeScore = Math.floor(Math.random() * 3) + 1;
+                    const awayScore = Math.floor(Math.random() * 3) + 1;
+                    const score = `${homeScore}-${awayScore}`;
+
+                    // 生成随机日期时间（未来7天内）
+                    const now = new Date();
+                    const futureDate = new Date(now.getTime() + Math.random() * 7 * 24 * 60 * 60 * 1000);
+                    const datetime = futureDate.toLocaleString('zh-CN', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+
+                    const schedule = {
+                        id: nextScheduleId++,
+                        team1: team1,
+                        team2: team2,
+                        datetime: datetime,
+                        score: score
+                    };
+
+                    schedules.push(schedule);
+                    renderSchedules();
+                } catch (error) {
+                    // 用户取消操作
+                }
+            }
+
+            // 编辑赛程
+            async function editSchedule(scheduleId) {
+                const schedule = schedules.find(s => s.id === scheduleId);
+                if (!schedule) return;
+
+                try {
+                    const team1 = await customPrompt('编辑对阵', '请输入主队名称：', schedule.team1, 'text');
+                    if (!team1) return;
+
+                    const team2 = await customPrompt('编辑对阵', '请输入客队名称：', schedule.team2, 'text');
+                    if (!team2) return;
+
+                    const datetime = await customPrompt('编辑对阵', '请输入比赛时间：', schedule.datetime, 'text');
+                    if (!datetime) return;
+
+                    const score = await customPrompt('编辑对阵', '请输入比分（格式：2-1）：', schedule.score, 'text');
+                    if (!score) return;
+
+                    schedule.team1 = team1;
+                    schedule.team2 = team2;
+                    schedule.datetime = datetime;
+                    schedule.score = score;
+
+                    renderSchedules();
+                } catch (error) {
+                    // 用户取消操作
+                }
+            }
+
+            // 删除赛程
+            function deleteSchedule(scheduleId) {
+                if (!confirm('确定要删除这个对阵吗？')) {
+                    return;
+                }
+
+                schedules = schedules.filter(s => s.id !== scheduleId);
+                renderSchedules();
+            }
+
+            // 自定义选择框函数
+            function customSelect(title, label, options, defaultValue = '') {
+                return new Promise((resolve, reject) => {
+                    modalResolve = resolve;
+                    modalReject = reject;
+                    
+                    modalTitle.textContent = title;
+                    selectLabel.textContent = label;
+                    
+                    // 清空并填充选择框
+                    modalSelect.innerHTML = '';
+                    options.forEach(option => {
+                        const optionElement = document.createElement('option');
+                        optionElement.value = option;
+                        optionElement.textContent = option;
+                        modalSelect.appendChild(optionElement);
+                    });
+                    
+                    if (defaultValue) {
+                        modalSelect.value = defaultValue;
+                    }
+                    
+                    // 显示选择框，隐藏输入框
+                    selectGroup.style.display = 'block';
+                    modalInput.style.display = 'none';
+                    identityGroup.style.display = 'none';
+                    
+                    // 显示模态框
+                    modal.classList.add('show');
+                    modalSelect.focus();
+                });
+            }
+
+            // 保存阵容
+            async function saveFormation() {
+                try {
+                    const name = await customPrompt('保存阵容', '请输入阵容名称：', `阵容${nextFormationId}`, 'text');
+                    if (!name) return;
+
+                    const formation = {
+                        id: nextFormationId++,
+                        name: name,
+                        teams: JSON.parse(JSON.stringify(teams)),
+                        playersByPosition: JSON.parse(JSON.stringify(playersByPosition)),
+                        timestamp: new Date().toISOString()
+                    };
+
+                    formations.push(formation);
+                    currentFormationId = formation.id;
+                    renderFormationTags();
+                    alert('阵容保存成功！');
+                } catch (error) {
+                    // 用户取消操作
+                }
+            }
+
+            // 切换阵容
+            function switchFormation(formationId) {
+                const formation = formations.find(f => f.id === formationId);
+                if (!formation) return;
+
+                teams = JSON.parse(JSON.stringify(formation.teams));
+                playersByPosition = JSON.parse(JSON.stringify(formation.playersByPosition));
+                currentFormationId = formationId;
+
+                renderTeams();
+                renderPlayerPool();
+                renderFormationTags();
+            }
+
+            // 修改阵容名称
+            async function editFormationName(formationId) {
+                const formation = formations.find(f => f.id === formationId);
+                if (!formation) return;
+
+                try {
+                    const newName = await customPrompt('修改阵容名称', '请输入新的阵容名称：', formation.name, 'text');
+                    if (newName) {
+                        formation.name = newName;
+                        renderFormationTags();
+                    }
+                } catch (error) {
+                    // 用户取消操作
+                }
+            }
+
+            // 删除阵容
+            function deleteFormation(formationId) {
+                if (!confirm('确定要删除这个阵容吗？')) {
+                    return;
+                }
+
+                formations = formations.filter(f => f.id !== formationId);
+                if (currentFormationId === formationId) {
+                    currentFormationId = null;
+                }
+                renderFormationTags();
+            }
+
+            // 启用拖放功能
+            function enableDragAndDrop() {
+                // 选手池中的选手
+                const playerItems = document.querySelectorAll('.player-item');
+                playerItems.forEach(item => {
+                    item.addEventListener('dragstart', handleDragStart);
+                    item.addEventListener('dragend', handleDragEnd);
+                });
+
+                // 队伍中的成员
+                const memberItems = document.querySelectorAll('.member-item');
+                memberItems.forEach(item => {
+                    item.addEventListener('dragstart', handleDragStart);
+                    item.addEventListener('dragend', handleDragEnd);
+                    item.addEventListener('dragover', handleDragOver);
+                    item.addEventListener('dragenter', handleDragEnter);
+                    item.addEventListener('dragleave', handleDragLeave);
+                    item.addEventListener('drop', handleDrop);
+                });
+
+                // 空位
+                const emptySlots = document.querySelectorAll('.empty-slot');
+                emptySlots.forEach(slot => {
+                    slot.addEventListener('dragover', handleDragOver);
+                    slot.addEventListener('dragenter', handleDragEnter);
+                    slot.addEventListener('dragleave', handleDragLeave);
+                    slot.addEventListener('drop', handleDrop);
+                });
+            }
+
+            // 拖放事件处理
+            let draggedItem = null;
+
+            function handleDragStart(e) {
+                draggedItem = this;
+                this.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', this.dataset.playerId);
+            }
+
+            function handleDragEnd() {
+                this.classList.remove('dragging');
+                document.querySelectorAll('.drag-over').forEach(item => {
+                    item.classList.remove('drag-over');
+                });
+                draggedItem = null;
+            }
+
+            function handleDragOver(e) {
+                e.preventDefault();
+                return false;
+            }
+
+            function handleDragEnter(e) {
+                this.classList.add('drag-over');
+            }
+
+            function handleDragLeave() {
+                this.classList.remove('drag-over');
+            }
+
+            function handleDrop(e) {
+                e.preventDefault();
+                this.classList.remove('drag-over');
+
+                if (draggedItem) {
+                    const playerId = parseInt(draggedItem.dataset.playerId);
+
+                    // 判断拖放目标
+                    if (this.classList.contains('empty-slot') || this.classList.contains('team-members')) {
+                        // 拖放到空位或队伍成员区域
+                        const targetTeamId = parseInt(this.closest('.team-card').dataset.teamId);
+                        const targetTeam = teams.find(t => t.id === targetTeamId);
+
+                        if (!targetTeam) return;
+
+                        // 检查队伍是否已满
+                        if (targetTeam.members.length >= 5) {
+                            alert('队伍已满，无法添加更多选手！');
+                            return;
+                        }
+
+                        // 从选手池拖动到队伍
+                        if (draggedItem.classList.contains('player-item')) {
+                            addPlayerToTeamFromPool(playerId, targetTeamId);
+                        }
+                        // 从队伍内或跨队伍拖动
+                        else if (draggedItem.classList.contains('member-item')) {
+                            const sourceTeamId = parseInt(draggedItem.dataset.teamId);
+                            if (sourceTeamId !== targetTeamId) {
+                                movePlayerBetweenTeams(playerId, sourceTeamId, targetTeamId);
+                            }
+                        }
+                    }
+                    // 拖放到已有成员位置（交换）
+                    else if (this.classList.contains('member-item')) {
+                        const targetTeamId = parseInt(this.closest('.team-card').dataset.teamId);
+                        const targetPlayerId = parseInt(this.dataset.playerId);
+
+                        // 从选手池拖动到队伍（交换）
+                        if (draggedItem.classList.contains('player-item')) {
+                            swapPlayerWithPool(playerId, targetPlayerId, targetTeamId);
+                        }
+                        // 从队伍内或跨队伍拖动（交换）
+                        else if (draggedItem.classList.contains('member-item')) {
+                            const sourceTeamId = parseInt(draggedItem.dataset.teamId);
+                            swapPlayersInTeams(playerId, sourceTeamId, targetPlayerId, targetTeamId);
+                        }
+                    }
+                }
+
+                return false;
+            }
+
+            // 从选手池添加选手到队伍（按顺序添加）
+            function addPlayerToTeamFromPool(playerId, teamId) {
+                const team = teams.find(t => t.id === teamId);
+                if (!team) return;
+
+                // 检查队伍是否已满
+                if (team.members.length >= 5) {
+                    alert('队伍已满，无法添加更多选手！');
+                    return;
+                }
+
+                // 从选手池中移除选手
+                let player = null;
+                for (const pos in playersByPosition) {
+                    const index = playersByPosition[pos].findIndex(p => p.id === playerId);
+                    if (index !== -1) {
+                        player = playersByPosition[pos][index];
+                        playersByPosition[pos].splice(index, 1);
+                        break;
+                    }
+                }
+
+                if (player) {
+                    // 按顺序添加到队伍（不按位置）
+                    team.members.push(player);
+                    renderTeams();
+                    renderPlayerPool();
+                }
+            }
+
+            // 在队伍间移动选手（按顺序添加）
+            function movePlayerBetweenTeams(playerId, sourceTeamId, targetTeamId) {
+                const sourceTeam = teams.find(t => t.id === sourceTeamId);
+                const targetTeam = teams.find(t => t.id === targetTeamId);
+                if (!sourceTeam || !targetTeam) return;
+
+                // 检查目标队伍是否已满
+                if (targetTeam.members.length >= 5) {
+                    alert('目标队伍已满，无法移动选手！');
+                    return;
+                }
+
+                // 从源队伍中移除选手
+                const playerIndex = sourceTeam.members.findIndex(p => p.id === playerId);
+                if (playerIndex === -1) return;
+
+                const player = sourceTeam.members[playerIndex];
+                sourceTeam.members.splice(playerIndex, 1);
+
+                // 按顺序添加到目标队伍
+                targetTeam.members.push(player);
+                renderTeams();
+                renderPlayerPool();
+            }
+
+            // 选手池选手与队伍选手交换
+            function swapPlayerWithPool(playerId, targetPlayerId, teamId) {
+                const team = teams.find(t => t.id === teamId);
+                if (!team) return;
+
+                // 从选手池中获取选手
+                let poolPlayer = null;
+                for (const pos in playersByPosition) {
+                    const index = playersByPosition[pos].findIndex(p => p.id === playerId);
+                    if (index !== -1) {
+                        poolPlayer = playersByPosition[pos][index];
+                        playersByPosition[pos].splice(index, 1);
+                        break;
+                    }
+                }
+
+                if (!poolPlayer) return;
+
+                // 从队伍中获取选手
+                const teamPlayerIndex = team.members.findIndex(p => p.id === targetPlayerId);
+                if (teamPlayerIndex === -1) return;
+
+                const teamPlayer = team.members[teamPlayerIndex];
+                team.members.splice(teamPlayerIndex, 1);
+
+                // 将队伍选手放回选手池
+                playersByPosition[teamPlayer.position].push(teamPlayer);
+
+                // 将选手池选手加入队伍
+                team.members.push(poolPlayer);
+
+                renderTeams();
+                renderPlayerPool();
+            }
+
+            // 队伍间选手交换
+            function swapPlayersInTeams(playerId, sourceTeamId, targetPlayerId, targetTeamId) {
+                const sourceTeam = teams.find(t => t.id === sourceTeamId);
+                const targetTeam = teams.find(t => t.id === targetTeamId);
+                if (!sourceTeam || !targetTeam) return;
+
+                // 获取源选手
+                const sourcePlayerIndex = sourceTeam.members.findIndex(p => p.id === playerId);
+                if (sourcePlayerIndex === -1) return;
+
+                const sourcePlayer = sourceTeam.members[sourcePlayerIndex];
+
+                // 获取目标选手
+                const targetPlayerIndex = targetTeam.members.findIndex(p => p.id === targetPlayerId);
+                if (targetPlayerIndex === -1) return;
+
+                const targetPlayer = targetTeam.members[targetPlayerIndex];
+
+                // 交换选手
+                sourceTeam.members[sourcePlayerIndex] = targetPlayer;
+                targetTeam.members[targetPlayerIndex] = sourcePlayer;
+
+                renderTeams();
+                renderPlayerPool();
+            }
+
+            // 从队伍中移除选手
+            function removePlayerFromTeam(playerId, teamId) {
+                const team = teams.find(t => t.id === teamId);
+                if (!team) return;
+
+                const playerIndex = team.members.findIndex(p => p.id === playerId);
+                if (playerIndex === -1) return;
+
+                const player = team.members[playerIndex];
+                team.members.splice(playerIndex, 1);
+
+                // 将选手放回选手池
+                playersByPosition[player.position].push(player);
+
+                renderTeams();
+                renderPlayerPool();
+            }
+
+            // 从选手池中移除选手
+            function removePlayerFromPool(playerId, position) {
+                const positionPlayers = playersByPosition[position];
+                const playerIndex = positionPlayers.findIndex(p => p.id === playerId);
+                if (playerIndex === -1) return;
+
+                positionPlayers.splice(playerIndex, 1);
+                renderPlayerPool();
+            }
+
+            // 修改选手等级
+            async function changePlayerLevel(playerId, teamId = null) {
+                let player = null;
+
+                if (teamId) {
+                    // 队伍中的选手
+                    const team = teams.find(t => t.id === teamId);
+                    if (!team) return;
+                    player = team.members.find(p => p.id === playerId);
+                } else {
+                    // 选手池中的选手
+                    for (const position in playersByPosition) {
+                        player = playersByPosition[position].find(p => p.id === playerId);
+                        if (player) break;
+                    }
+                }
+
+                if (!player) return;
+
+                try {
+                    const newLevel = await customPrompt('修改选手等级', '选择新的等级：', player.level, 'select');
+                    if (newLevel) {
+                        player.level = newLevel;
+                        if (teamId) {
+                            renderTeams();
+                        } else {
+                            renderPlayerPool();
+                        }
+                    }
+                } catch (error) {
+                    // 用户取消操作
+                }
+            }
+
+            // 切换选手身份
+            async function togglePlayerIdentity(playerId, teamId = null) {
+                let player = null;
+                let team = null;
+
+                if (teamId) {
+                    // 队伍中的选手
+                    team = teams.find(t => t.id === teamId);
+                    if (!team) return;
+                    player = team.members.find(p => p.id === playerId);
+                } else {
+                    // 选手池中的选手
+                    for (const position in playersByPosition) {
+                        player = playersByPosition[position].find(p => p.id === playerId);
+                        if (player) break;
+                    }
+                }
+
+                if (!player) return;
+
+                // 如果已经是队长，则取消队长身份
+                if (player.identity === '队长') {
+                    player.identity = '队员';
+                } else {
+                    // 如果是队伍中的选手，检查是否已有队长
+                    if (team) {
+                        const existingCaptain = team.members.find(m => m.identity === '队长');
+                        if (existingCaptain && existingCaptain.id !== playerId) {
+                            try {
+                                const confirmChange = await customPrompt('指定队长', '该队伍已有队长，是否替换？', '是', 'text');
+                                if (confirmChange && confirmChange.toLowerCase() === '是') {
+                                    existingCaptain.identity = '队员';
+                                    player.identity = '队长';
+                                }
+                            } catch (error) {
+                                // 用户取消操作
+                                return;
+                            }
+                        } else {
+                            player.identity = '队长';
+                        }
+                    } else {
+                        // 选手池中的选手直接设置为队长
+                        player.identity = '队长';
+                    }
+                }
+
+                if (teamId) {
+                    renderTeams();
+                } else {
+                    renderPlayerPool();
+                }
+            }
+
+            // 添加选手到位置
+            async function addPlayerToPosition(position) {
+                try {
+                    const name = await customPrompt('添加选手', '请输入选手姓名：', '', 'text');
+                    if (!name) return;
+
+                    const level = await customPrompt('选择等级', '请选择选手等级：', '筑基', 'select');
+                    if (!level) return;
+
+                    const identity = await customPrompt('选择身份', '请选择选手身份：', '队员', 'identity');
+                    if (!identity) return;
+
+                    const newPlayer = {
+                        id: nextPlayerId++,
+                        name: name,
+                        position: position,
+                        level: level,
+                        identity: identity
+                    };
+
+                    playersByPosition[position].push(newPlayer);
+                    renderPlayerPool();
+                } catch (error) {
+                    // 用户取消操作
+                }
+            }
+
+            // 编辑队伍名称
+            async function editTeamName(teamId) {
+                const team = teams.find(t => t.id === teamId);
+                if (!team) return;
+
+                try {
+                    const newName = await customPrompt('修改队伍名称', '请输入新的队伍名称：', team.name, 'text');
+                    if (newName) {
+                        team.name = newName;
+                        renderTeams();
+                    }
+                } catch (error) {
+                    // 用户取消操作
+                }
+            }
+
+            // 添加队伍
+            function addTeam() {
+                const newTeam = {
+                    id: nextTeamId++,
+                    name: `${nextTeamId - 1}队`,
+                    color: getRandomColor(),
+                    members: []
+                };
+                teams.push(newTeam);
+                renderTeams();
+            }
+
+            // 移除队伍
+            function removeTeam(teamId) {
+                if (teams.length <= 1) {
+                    alert('至少需要保留一个队伍！');
+                    return;
+                }
+
+                const team = teams.find(t => t.id === teamId);
+                if (!team) return;
+
+                // 将队伍中的选手放回选手池
+                team.members.forEach(player => {
+                    playersByPosition[player.position].push(player);
+                });
+
+                teams = teams.filter(t => t.id !== teamId);
+                renderTeams();
+                renderPlayerPool();
+            }
+
+            // 获取随机颜色
+            function getRandomColor() {
+                const colors = [
+                    '#dc3545', '#0d6efd', '#198754', '#fd7e14', '#6f42c1',
+                    '#20c997', '#e83e8c', '#6610f2', '#0dcaf0', '#ffc107'
+                ];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+
+            // 清空
+            function clearAllTeams() {
+                if (!confirm('确定要清空所有队伍吗？所有选手将回到选手池。')) {
+                    return;
+                }
+
+                // 将所有选手放回选手池
+                teams.forEach(team => {
+                    team.members.forEach(player => {
+                        playersByPosition[player.position].push(player);
+                    });
+                    team.members = [];
+                });
+
+                renderTeams();
+                renderPlayerPool();
+            }
+
+            // 生成阵容 - 智能版本
+            function generateTeams() {
+                if (!confirm('确定要生成阵容吗？将根据当前阵容情况进行智能分配。')) {
+                    return;
+                }
+
+                // 获取所有可用的选手（选手池中的选手）
+                const availablePlayers = [];
+                for (const position in playersByPosition) {
+                    playersByPosition[position].forEach(player => {
+                        availablePlayers.push(player);
+                    });
+                }
+
+                if (availablePlayers.length === 0) {
+                    alert('选手池中没有可用的选手！');
+                    return;
+                }
+
+                // 计算当前队伍情况
+                const teamCount = teams.length;
+                let totalPlayersNeeded = 0;
+                let currentPlayersCount = 0;
+
+                // 统计当前各队伍情况
+                teams.forEach(team => {
+                    currentPlayersCount += team.members.length;
+                });
+
+                // 计算需要补充的选手数量（优先补满5人）
+                const maxPlayersPerTeam = 5;
+                totalPlayersNeeded = teamCount * maxPlayersPerTeam - currentPlayersCount;
+
+                // 如果选手数量不足，调整每队人数
+                let targetPlayersPerTeam = maxPlayersPerTeam;
+                if (availablePlayers.length < totalPlayersNeeded) {
+                    // 计算最大可分配人数
+                    const totalAvailablePlayers = availablePlayers.length + currentPlayersCount;
+                    targetPlayersPerTeam = Math.floor(totalAvailablePlayers / teamCount);
+                    
+                    if (targetPlayersPerTeam < 1) {
+                        alert('选手数量太少，无法进行有效分配！');
+                        return;
+                    }
+                    
+                    console.log(`选手数量不足，调整为每队${targetPlayersPerTeam}人`);
+                }
+
+                // 按等级权重排序可用选手（从高到低）
+                const sortedPlayers = [...availablePlayers].sort((a, b) => 
+                    levelWeights[b.level] - levelWeights[a.level]
+                );
+
+                // 计算各队伍当前实力
+                const teamPowers = teams.map(team => 
+                    team.members.reduce((sum, player) => sum + levelWeights[player.level], 0)
+                );
+
+                // 计算各队伍还需要补充的选手数量
+                const playersNeededPerTeam = teams.map(team => 
+                    Math.max(0, targetPlayersPerTeam - team.members.length)
+                );
+
+                // 智能分配选手
+                let remainingPlayers = [...sortedPlayers];
+                
+                // 为每个需要补充选手的队伍分配选手
+                while (remainingPlayers.length > 0) {
+                    let assigned = false;
+                    
+                    // 按照实力从低到高的顺序为队伍分配选手（保证实力均衡）
+                    const teamIndices = teams
+                        .map((team, index) => ({ index, power: teamPowers[index], needed: playersNeededPerTeam[index] }))
+                        .filter(team => team.needed > 0)
+                        .sort((a, b) => a.power - b.power)
+                        .map(team => team.index);
+
+                    if (teamIndices.length === 0) break;
+
+                    for (const teamIndex of teamIndices) {
+                        const team = teams[teamIndex];
+                        
+                        if (team.members.length >= targetPlayersPerTeam) continue;
+
+                        // 为队伍分配选手（不限制位置）
+                        if (remainingPlayers.length > 0) {
+                            const player = remainingPlayers.shift();
+                            team.members.push(player);
+                            teamPowers[teamIndex] += levelWeights[player.level];
+                            playersNeededPerTeam[teamIndex]--;
+                            
+                            // 从选手池中移除该选手
+                            const posIndex = playersByPosition[player.position].findIndex(p => p.id === player.id);
+                            if (posIndex !== -1) {
+                                playersByPosition[player.position].splice(posIndex, 1);
+                            }
+                            
+                            assigned = true;
+                        }
+                    }
+
+                    // 如果这一轮没有分配任何选手，说明无法继续分配
+                    if (!assigned) break;
+                }
+
+                // 如果选择位置排序，则按位置排序
+                if (sortMethod === 'position') {
+                    teams.forEach(team => {
+                        team.members.sort((a, b) => positionOrder.indexOf(a.position) - positionOrder.indexOf(b.position));
+                    });
+                }
+
+                renderTeams();
+                renderPlayerPool();
+                
+                // 显示分配结果
+                let resultMessage = "阵容生成完成！\n\n分配结果：\n";
+                teams.forEach(team => {
+                    const totalPower = team.members.reduce((sum, player) => sum + levelWeights[player.level], 0);
+                    resultMessage += `${team.name}: ${totalPower}点实力 (${team.members.length}/${targetPlayersPerTeam}人)\n`;
+                });
+                resultMessage += `\n总共使用了 ${sortedPlayers.length - remainingPlayers.length} 名选手`;
+                alert(resultMessage);
+            }
+
+            // 导出阵容（包含阵容列表和赛程数据）
+            function exportData() {
+                const data = {
+                    teams: teams,
+                    playersByPosition: playersByPosition,
+                    formations: formations,
+                    schedules: schedules,
+                    nextPlayerId: nextPlayerId,
+                    nextTeamId: nextTeamId,
+                    nextFormationId: nextFormationId,
+                    nextScheduleId: nextScheduleId,
+                    currentFormationId: currentFormationId
+                };
+
+                const dataStr = JSON.stringify(data, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'lol_formation_system.json';
+                link.click();
+
+                URL.revokeObjectURL(url);
+            }
+
+            // 导入阵容（包含阵容列表和赛程数据）
+            function importData() {
+                const fileInput = document.getElementById('importFile');
+                fileInput.onchange = function (e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        try {
+                            const data = JSON.parse(e.target.result);
+                            importedData = data;
+
+                            // 应用导入的数据
+                            teams = data.teams || teams;
+                            playersByPosition = data.playersByPosition || playersByPosition;
+                            formations = data.formations || [];
+                            schedules = data.schedules || [];
+                            nextPlayerId = data.nextPlayerId || nextPlayerId;
+                            nextTeamId = data.nextTeamId || nextTeamId;
+                            nextFormationId = data.nextFormationId || nextFormationId;
+                            nextScheduleId = data.nextScheduleId || nextScheduleId;
+                            currentFormationId = data.currentFormationId || null;
+
+                            renderTeams();
+                            renderPlayerPool();
+                            renderFormationTags();
+                            alert('数据导入成功！');
+                        } catch (error) {
+                            alert('导入失败：文件格式不正确！');
+                        }
+                    };
+                    reader.readAsText(file);
+                    fileInput.value = '';
+                };
+                fileInput.click();
+            }
+
+            // 绑定事件
+            function bindEvents() {
+                document.getElementById('addTeamBtn').addEventListener('click', addTeam);
+                document.getElementById('clearAllBtn').addEventListener('click', clearAllTeams);
+                document.getElementById('generateTeamBtn').addEventListener('click', generateTeams);
+                document.getElementById('saveFormationBtn').addEventListener('click', saveFormation);
+                document.getElementById('scheduleBtn').addEventListener('click', openScheduleModal);
+                document.getElementById('exportBtn').addEventListener('click', exportData);
+                document.getElementById('importBtn').addEventListener('click', importData);
+
+                // 排序选择事件
+                document.getElementById('sortSelect').addEventListener('change', function(e) {
+                    sortMethod = e.target.value;
+                    renderTeams();
+                });
+            }
+
+            // 初始化应用
+            initApp();
+        });
+    </script>
+</body>
+</html>
