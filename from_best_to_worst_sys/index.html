@@ -83,24 +83,54 @@
             background: linear-gradient(135deg, #a8e6cf, #dcedc1);
         }
         .gradient-2 {
-            background: linear-gradient(135deg, #ffd3b6, #ffaaa5);
+            background: linear-gradient(135deg, #a8e6cf, #dcedc1);
         }
         .gradient-3 {
-            background: linear-gradient(135deg, #ff8b94, #ffaaa5);
+            background: linear-gradient(135deg, #ffd3b6, #ffaaa5);
         }
         .gradient-4 {
-            background: linear-gradient(135deg, #d291bc, #e0bbe4);
+            background: linear-gradient(135deg, #ffd3b6, #ffaaa5);
         }
         .gradient-5 {
+            background: linear-gradient(135deg, #ff8b94, #ffaaa5);
+        }
+        .gradient-6 {
+            background: linear-gradient(135deg, #ff8b94, #ffaaa5);
+        }
+        .gradient-7 {
+            background: linear-gradient(135deg, #d291bc, #e0bbe4);
+        }
+        .gradient-8 {
             background: linear-gradient(135deg, #9896f0, #d59bf6);
         }
         .section-title {
-            text-align: center;
             margin-bottom: 20px;
-            font-weight: bold;
             color: #333;
             border-bottom: 2px solid #dee2e6;
             padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .section-title h3 {
+            font-weight: normal;
+            margin: 0;
+            font-size: 1.25rem;
+        }
+        .title-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .classification-selector {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .classification-radio {
+            display: flex;
+            gap: 5px;
+            align-items: center;
         }
         .image-item {
             max-width: 120px;
@@ -162,20 +192,38 @@
             width: 100%;
             text-align: center;
         }
+        .data-buttons {
+            text-align: center;
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header-section">
             <h1 class="text-center mb-4">从夯到拉</h1>
-            <div class="d-flex justify-content-center">
-                <button id="import-btn" class="btn btn-primary btn-custom">导入数据</button>
-                <button id="export-btn" class="btn btn-success btn-custom">导出数据</button>
-            </div>
         </div>
-        
+
         <div class="table-container">
-            <h3 class="section-title">等级评价表</h3>
+
+            <div class="section-title">
+                <h3>等级评价表</h3>
+                <div class="title-controls">
+                    <div class="classification-selector">
+                        <div class="classification-radio">
+                            <input type="radio" id="classification-1" name="classification" value="夯到拉" checked>
+                            <label for="classification-1">从夯到拉</label>
+                        </div>
+                        <div class="classification-radio">
+                            <input type="radio" id="classification-2" name="classification" value="SABC">
+                            <label for="classification-2">SABC</label>
+                        </div>
+                    </div>
+                    <button id="clear-btn" class="btn btn-danger btn-sm">清除所有图片</button>
+                    <button id="import-btn" class="btn btn-primary btn-sm">导入数据</button>
+                    <button id="export-btn" class="btn btn-success btn-sm">导出数据</button>
+                </div>
+            </div>
             
             <div class="table-layout">
                 <div class="labels-column" id="labels-column">
@@ -189,6 +237,7 @@
             <div class="upload-hint">
                 提示：将图片文件拖拽到上方表格区域即可添加图片
             </div>
+
         </div>
         
         <div class="explanation">
@@ -202,6 +251,7 @@
                 <li>使用"导入数据"和"导出数据"按钮保存和加载表格内容</li>
                 <li>每个等级可以放置多张图片，但同一张图片不能重复出现</li>
                 <li>当图片数量增多时，行高会自动扩展以容纳更多图片</li>
+                <li>点击"清除所有图片"按钮可以一次性删除所有图片</li>
             </ul>
         </div>
     </div>
@@ -211,26 +261,52 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const labels = ['夯', '等级', '人上人', 'NPC', '拉完了'];
-            const gradients = [
-                'gradient-1', // 最好 - 浅绿色
-                'gradient-2', // 较好 - 浅橙色
-                'gradient-3', // 中等 - 浅红色
-                'gradient-4', // 较差 - 浅紫色
-                'gradient-5'  // 最差 - 浅蓝色
-            ];
+            // 定义两种分类方式
+            const classifications = {
+                '夯到拉': {
+                    labels: ['夯', '顶级', '人上人', 'NPC', '拉', '拉完了'],
+                    gradients: [
+                        'gradient-1', // 最好 - 浅绿色
+                        'gradient-2', // 较好 - 浅绿色
+                        'gradient-3', // 中等偏上 - 浅橙色
+                        'gradient-4', // 中等 - 浅橙色
+                        'gradient-5', // 较差 - 浅红色
+                        'gradient-6'  // 最差 - 浅红色
+                    ]
+                },
+                'SABC': {
+                    labels: ['S', 'A+', 'A', 'A-', 'B+', 'B', 'B-', 'C'],
+                    gradients: [
+                        'gradient-1', // S - 浅绿色
+                        'gradient-2', // A+ - 浅绿色
+                        'gradient-3', // A - 浅橙色
+                        'gradient-4', // A- - 浅橙色
+                        'gradient-5', // B+ - 浅红色
+                        'gradient-6', // B - 浅红色
+                        'gradient-7', // B- - 浅紫色
+                        'gradient-8'  // C - 浅蓝色
+                    ]
+                }
+            };
             
             const labelsColumn = document.getElementById('labels-column');
             const contentColumn = document.getElementById('content-column');
             const importBtn = document.getElementById('import-btn');
             const exportBtn = document.getElementById('export-btn');
+            const clearBtn = document.getElementById('clear-btn');
+            const classificationRadios = document.querySelectorAll('input[name="classification"]');
             
+            let currentClassification = '夯到拉';
             let draggedImage = null;
             // 存储所有已添加图片的URL，防止重复添加
             const addedImages = new Set();
 
             // 创建表格行
             function createTableRows() {
+                const classification = classifications[currentClassification];
+                const labels = classification.labels;
+                const gradients = classification.gradients;
+                
                 labelsColumn.innerHTML = '';
                 contentColumn.innerHTML = '';
                 
@@ -250,7 +326,7 @@
                     // 添加空状态提示
                     const emptyState = document.createElement('div');
                     emptyState.className = 'empty-state';
-                    emptyState.textContent = '拖拽图片到此处';
+                    emptyState.textContent = '';
                     contentCell.appendChild(emptyState);
                     
                     // 添加拖放事件监听器
@@ -258,6 +334,9 @@
                     
                     contentColumn.appendChild(contentCell);
                 });
+                
+                // 更新行高
+                initializeRowHeights();
             }
 
             // 初始化表格
@@ -307,7 +386,7 @@
                             updateEmptyState(this);
                             updateRowHeight(this);
                         } else {
-                            alert('该图片已在此等级中存在！');
+                            console.log('该图片已在此等级中存在！');
                         }
                         
                         draggedImage = null;
@@ -323,7 +402,7 @@
                         reader.onload = function(e) {
                             // 检查图片是否已存在
                             if (addedImages.has(e.target.result)) {
-                                alert('该图片已存在，不能重复添加！');
+                                console.log('该图片已存在，不能重复添加！');
                                 return;
                             }
                             
@@ -415,7 +494,7 @@
                 if (!hasImages && !emptyState) {
                     const newEmptyState = document.createElement('div');
                     newEmptyState.className = 'empty-state';
-                    newEmptyState.textContent = '拖拽图片到此处';
+                    newEmptyState.textContent = '';
                     container.appendChild(newEmptyState);
                 } else if (hasImages && emptyState) {
                     emptyState.remove();
@@ -443,7 +522,14 @@
             
             // 导出数据功能
             exportBtn.addEventListener('click', function() {
-                const data = {};
+                const classification = classifications[currentClassification];
+                const labels = classification.labels;
+                
+                const data = {
+                    classification: currentClassification,
+                    content: {}
+                };
+                
                 const contentCells = document.querySelectorAll('.content-cell');
                 
                 contentCells.forEach((cell, index) => {
@@ -455,7 +541,7 @@
                         imageData.push(img.src);
                     });
                     
-                    data[labels[index]] = {
+                    data.content[labels[index]] = {
                         images: imageData
                     };
                 });
@@ -472,7 +558,7 @@
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
                 
-                alert('数据已导出为JSON文件！');
+                console.log('数据已导出为JSON文件！');
             });
             
             // 导入数据功能
@@ -488,6 +574,17 @@
                         reader.onload = function(e) {
                             try {
                                 const data = JSON.parse(e.target.result);
+                                
+                                // 如果导入的数据包含分类信息，则切换到对应分类
+                                if (data.classification && classifications[data.classification]) {
+                                    currentClassification = data.classification;
+                                    // 更新单选按钮状态
+                                    document.querySelector(`input[value="${currentClassification}"]`).checked = true;
+                                    createTableRows();
+                                }
+                                
+                                const classification = classifications[currentClassification];
+                                const labels = classification.labels;
                                 const contentCells = document.querySelectorAll('.content-cell');
                                 
                                 // 清空所有已添加图片
@@ -498,10 +595,10 @@
                                     cell.innerHTML = '';
                                     
                                     const label = labels[index];
-                                    if (data[label]) {
+                                    if (data.content && data.content[label]) {
                                         // 添加图片数据
-                                        if (data[label].images && Array.isArray(data[label].images)) {
-                                            data[label].images.forEach(src => {
+                                        if (data.content[label].images && Array.isArray(data.content[label].images)) {
+                                            data.content[label].images.forEach(src => {
                                                 // 检查图片是否已存在
                                                 if (!addedImages.has(src)) {
                                                     addImageFromSrc(cell, src);
@@ -515,9 +612,9 @@
                                     updateRowHeight(cell);
                                 });
                                 
-                                alert('数据导入成功！');
+                                console.log('数据导入成功！');
                             } catch (e) {
-                                alert('数据格式错误，请检查JSON格式！');
+                                console.log('数据格式错误，请检查JSON格式！');
                             }
                         };
                         reader.readAsText(file);
@@ -584,8 +681,33 @@
                 initializeRowHeights();
             });
             
-            // 初始化行高
-            initializeRowHeights();
+            // 清除所有图片
+            clearBtn.addEventListener('click', function() {
+                const contentCells = document.querySelectorAll('.content-cell');
+                contentCells.forEach(cell => {
+                    cell.innerHTML = '';
+                    const emptyState = document.createElement('div');
+                    emptyState.className = 'empty-state';
+                    emptyState.textContent = '';
+                    cell.appendChild(emptyState);
+                    updateRowHeight(cell);
+                });
+                
+                // 清空已添加图片集合
+                addedImages.clear();
+                
+                console.log('所有图片已清除！');
+            });
+            
+            // 分类方式切换
+            classificationRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.checked) {
+                        currentClassification = this.value;
+                        createTableRows();
+                    }
+                });
+            });
         });
     </script>
 </body>
