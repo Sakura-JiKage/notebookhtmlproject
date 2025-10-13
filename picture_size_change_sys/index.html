@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片尺寸批量修改工具</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .container {
+            flex: 1;
+        }
+        .drop-zone {
+            border: 2px dashed #007bff;
+            border-radius: 10px;
+            padding: 40px 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            background-color: #f8f9fa;
+            cursor: pointer;
+        }
+        .drop-zone.active {
+            border-color: #28a745;
+            background-color: #e9f7ef;
+        }
+        .drop-zone:hover {
+            background-color: #e9ecef;
+        }
+        .image-preview {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .preview-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .preview-info {
+            background-color: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 0 0 5px 5px;
+            font-size: 0.8rem;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+        .btn-download {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            z-index: 100;
+        }
+        .btn-clear {
+            position: fixed;
+            bottom: 150px;
+            right: 20px;
+            z-index: 100;
+        }
+        .processing-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            display: none;
+        }
+        footer {
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            border-top: 1px solid #e9ecef;
+            margin-top: 40px;
+            background-color: #343a40;
+        }
+        .footer-link {
+            color: #6c757d;
+            text-decoration: none;
+        }
+        .footer-link:hover {
+            color: #495057;
+            text-decoration: underline;
+        }
+        .download-options {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            z-index: 100;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+        }
+        .download-option-btn {
+            display: block;
+            width: 100%;
+            margin-bottom: 8px;
+            text-align: left;
+        }
+        .download-option-btn:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <h1 class="text-center mb-4">图片尺寸批量修改工具</h1>
+        
+        <!-- 设置区域 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">尺寸设置</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">调整模式</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="resizeMode" id="proportional" value="proportional" checked>
+                            <label class="form-check-label" for="proportional">
+                                等比例调整
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="resizeMode" id="free" value="free">
+                            <label class="form-check-label" for="free">
+                                任意比例调整
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="width" class="form-label">宽度 (px)</label>
+                        <input type="number" class="form-control" id="width" value="800" min="1">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="height" class="form-label">高度 (px)</label>
+                        <input type="number" class="form-control" id="height" value="600" min="1">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <button id="applySettings" class="btn btn-primary">应用设置到所有图片</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 拖放区域 -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div id="dropZone" class="drop-zone">
+                    <i class="bi bi-cloud-arrow-up display-4 text-primary mb-3"></i>
+                    <h4>拖放图片到这里</h4>
+                    <p class="text-muted">支持多张图片同时拖放</p>
+                    <p class="text-muted">或点击此处选择图片</p>
+                    <input type="file" id="fileInput" multiple accept="image/*" style="display: none;">
+                </div>
+            </div>
+        </div>
+        
+        <!-- 图片预览区域 -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">图片预览</h5>
+                <span id="imageCount" class="badge bg-primary">0 张图片</span>
+            </div>
+            <div class="card-body">
+                <div id="imagePreviews" class="row">
+                    <!-- 图片预览将在这里动态生成 -->
+                    <div class="col-12 text-center text-muted py-5" id="noImagesMessage">
+                        暂无图片，请拖放或选择图片
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 清除按钮 -->
+    <button id="clearAll" class="btn btn-warning btn-lg btn-clear" style="display: none;">
+        <i class="bi bi-trash"></i> 清除所有图片
+    </button>
+    
+    <!-- 下载按钮 -->
+    <button id="downloadAll" class="btn btn-success btn-lg btn-download" style="display: none;">
+        <i class="bi bi-download"></i> 下载所有图片
+    </button>
+    
+    <!-- 下载选项菜单 -->
+    <div class="download-options" id="downloadOptions">
+        <button class="btn btn-outline-primary download-option-btn" data-type="single">
+            <i class="bi bi-file-arrow-down"></i> 逐个下载图片
+        </button>
+        <button class="btn btn-outline-primary download-option-btn" data-type="zip">
+            <i class="bi bi-file-earmark-zip"></i> 打包为ZIP下载
+        </button>
+        <hr>
+        <button class="btn btn-outline-secondary download-option-btn" id="closeDownloadOptions">
+            <i class="bi bi-x"></i> 取消
+        </button>
+    </div>
+    
+    <!-- 处理中遮罩 -->
+    <div class="processing-overlay" id="processingOverlay">
+        <div class="text-center text-white">
+            <div class="spinner-border mb-3" role="status"></div>
+            <p id="processingText">正在处理图片，请稍候...</p>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="container text-center">
+            <p class="mb-0">Developed With DeepSeek & Bootstrap</p>
+        </div>
+    </footer>
+
+    <!-- JSZip库用于创建ZIP文件 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 全局变量
+        let images = [];
+        let resizeMode = 'proportional';
+        let targetWidth = 800;
+        let targetHeight = 600;
+        
+        // DOM 元素
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const imagePreviews = document.getElementById('imagePreviews');
+        const noImagesMessage = document.getElementById('noImagesMessage');
+        const imageCount = document.getElementById('imageCount');
+        const downloadAllBtn = document.getElementById('downloadAll');
+        const clearAllBtn = document.getElementById('clearAll');
+        const processingOverlay = document.getElementById('processingOverlay');
+        const processingText = document.getElementById('processingText');
+        const downloadOptions = document.getElementById('downloadOptions');
+        
+        // 事件监听器
+        document.addEventListener('DOMContentLoaded', function() {
+            // 拖放区域事件
+            dropZone.addEventListener('click', () => fileInput.click());
+            dropZone.addEventListener('dragover', handleDragOver);
+            dropZone.addEventListener('dragleave', handleDragLeave);
+            dropZone.addEventListener('drop', handleDrop);
+            
+            // 文件输入事件
+            fileInput.addEventListener('change', handleFileSelect);
+            
+            // 设置事件
+            document.querySelectorAll('input[name="resizeMode"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    resizeMode = this.value;
+                    updateHeightInputState();
+                });
+            });
+            
+            document.getElementById('width').addEventListener('change', function() {
+                targetWidth = parseInt(this.value);
+                if (resizeMode === 'proportional') {
+                    updateHeightProportionally();
+                }
+            });
+            
+            document.getElementById('height').addEventListener('change', function() {
+                targetHeight = parseInt(this.value);
+            });
+            
+            document.getElementById('applySettings').addEventListener('click', applySettingsToAll);
+            
+            // 清除按钮事件
+            clearAllBtn.addEventListener('click', clearAllImages);
+            
+            // 下载按钮事件
+            downloadAllBtn.addEventListener('click', function() {
+                // 显示下载选项菜单
+                downloadOptions.style.display = 'block';
+            });
+            
+            // 下载选项事件
+            document.querySelectorAll('.download-option-btn[data-type]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const downloadType = this.getAttribute('data-type');
+                    downloadOptions.style.display = 'none';
+                    
+                    if (downloadType === 'single') {
+                        downloadImagesIndividually();
+                    } else if (downloadType === 'zip') {
+                        downloadImagesAsZip();
+                    }
+                });
+            });
+            
+            // 关闭下载选项
+            document.getElementById('closeDownloadOptions').addEventListener('click', function() {
+                downloadOptions.style.display = 'none';
+            });
+            
+            // 初始化高度输入框状态
+            updateHeightInputState();
+        });
+        
+        // 处理拖放事件
+        function handleDragOver(e) {
+            e.preventDefault();
+            dropZone.classList.add('active');
+        }
+        
+        function handleDragLeave(e) {
+            e.preventDefault();
+            if (!dropZone.contains(e.relatedTarget)) {
+                dropZone.classList.remove('active');
+            }
+        }
+        
+        function handleDrop(e) {
+            e.preventDefault();
+            dropZone.classList.remove('active');
+            
+            const files = e.dataTransfer.files;
+            processFiles(files);
+        }
+        
+        function handleFileSelect(e) {
+            const files = e.target.files;
+            processFiles(files);
+        }
+        
+        // 处理文件
+        function processFiles(files) {
+            const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+            
+            if (imageFiles.length === 0) {
+                alert('请选择图片文件！');
+                return;
+            }
+            
+            imageFiles.forEach(file => {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        // 创建图片对象
+                        const imageObj = {
+                            id: Date.now() + Math.random(),
+                            file: file,
+                            originalWidth: img.width,
+                            originalHeight: img.height,
+                            src: e.target.result,
+                            width: targetWidth,
+                            height: resizeMode === 'proportional' ? 
+                                Math.round(targetWidth * (img.height / img.width)) : targetHeight
+                        };
+                        
+                        images.push(imageObj);
+                        renderImagePreview(imageObj);
+                        updateImageCount();
+                        updateDownloadButton();
+                        updateClearButton();
+                    };
+                    img.src = e.target.result;
+                };
+                
+                reader.readAsDataURL(file);
+            });
+            
+            // 重置文件输入，允许再次选择相同文件
+            fileInput.value = '';
+        }
+        
+        // 渲染图片预览
+        function renderImagePreview(imageObj) {
+            // 移除"暂无图片"消息
+            if (noImagesMessage.style.display !== 'none') {
+                noImagesMessage.style.display = 'none';
+            }
+            
+            // 创建预览容器
+            const previewContainer = document.createElement('div');
+            previewContainer.className = 'col-md-4 col-sm-6 mb-4 preview-container';
+            previewContainer.id = `preview-${imageObj.id}`;
+            
+            // 创建图片元素
+            const img = document.createElement('img');
+            img.className = 'image-preview';
+            img.src = imageObj.src;
+            img.style.width = '100%';
+            
+            // 创建信息栏
+            const infoBar = document.createElement('div');
+            infoBar.className = 'preview-info';
+            infoBar.innerHTML = `
+                <div class="d-flex justify-content-between">
+                    <span>${imageObj.originalWidth}×${imageObj.originalHeight}</span>
+                    <span>→</span>
+                    <span>${imageObj.width}×${imageObj.height}</span>
+                </div>
+            `;
+            
+            // 组装预览
+            previewContainer.appendChild(img);
+            previewContainer.appendChild(infoBar);
+            
+            // 添加到预览区域
+            imagePreviews.appendChild(previewContainer);
+        }
+        
+        // 更新图片计数
+        function updateImageCount() {
+            imageCount.textContent = `${images.length} 张图片`;
+        }
+        
+        // 更新下载按钮状态
+        function updateDownloadButton() {
+            if (images.length > 0) {
+                downloadAllBtn.style.display = 'block';
+            } else {
+                downloadAllBtn.style.display = 'none';
+            }
+        }
+        
+        // 更新清除按钮状态
+        function updateClearButton() {
+            if (images.length > 0) {
+                clearAllBtn.style.display = 'block';
+            } else {
+                clearAllBtn.style.display = 'none';
+            }
+        }
+        
+        // 更新高度输入框状态
+        function updateHeightInputState() {
+            const heightInput = document.getElementById('height');
+            if (resizeMode === 'proportional') {
+                heightInput.disabled = true;
+                updateHeightProportionally();
+            } else {
+                heightInput.disabled = false;
+            }
+        }
+        
+        // 按比例更新高度
+        function updateHeightProportionally() {
+            const widthInput = document.getElementById('width');
+            const heightInput = document.getElementById('height');
+            
+            if (images.length > 0) {
+                // 使用第一张图片的比例
+                const firstImage = images[0];
+                const ratio = firstImage.originalHeight / firstImage.originalWidth;
+                heightInput.value = Math.round(targetWidth * ratio);
+                targetHeight = heightInput.value;
+            } else {
+                // 默认比例 3:4
+                heightInput.value = Math.round(targetWidth * 0.75);
+                targetHeight = heightInput.value;
+            }
+        }
+        
+        // 应用设置到所有图片
+        function applySettingsToAll() {
+            images.forEach(image => {
+                applySettingsToImage(image.id);
+            });
+        }
+        
+        // 应用设置到单个图片
+        function applySettingsToImage(imageId) {
+            const imageIndex = images.findIndex(img => img.id === imageId);
+            if (imageIndex === -1) return;
+            
+            const image = images[imageIndex];
+            
+            if (resizeMode === 'proportional') {
+                // 等比例调整
+                const ratio = image.originalHeight / image.originalWidth;
+                image.width = targetWidth;
+                image.height = Math.round(targetWidth * ratio);
+            } else {
+                // 任意比例调整
+                image.width = targetWidth;
+                image.height = targetHeight;
+            }
+            
+            // 更新预览
+            updateImagePreview(image);
+        }
+        
+        // 更新图片预览
+        function updateImagePreview(image) {
+            const previewContainer = document.getElementById(`preview-${image.id}`);
+            if (!previewContainer) return;
+            
+            const infoBar = previewContainer.querySelector('.preview-info');
+            infoBar.innerHTML = `
+                <div class="d-flex justify-content-between">
+                    <span>${image.originalWidth}×${image.originalHeight}</span>
+                    <span>→</span>
+                    <span>${image.width}×${image.height}</span>
+                </div>
+            `;
+        }
+        
+        // 清除所有图片
+        function clearAllImages() {
+            if (images.length === 0) return;
+            
+            if (confirm('确定要清除所有图片吗？此操作不可撤销。')) {
+                // 清空数组
+                images = [];
+                
+                // 清空DOM
+                imagePreviews.innerHTML = '';
+                
+                // 显示提示消息
+                noImagesMessage.style.display = 'block';
+                
+                // 更新计数和按钮
+                updateImageCount();
+                updateDownloadButton();
+                updateClearButton();
+            }
+        }
+        
+        // 逐个下载图片
+        function downloadImagesIndividually() {
+            if (images.length === 0) return;
+            
+            // 显示处理中遮罩
+            processingOverlay.style.display = 'flex';
+            processingText.textContent = '正在处理图片，请稍候...';
+            
+            // 使用setTimeout让UI有机会更新
+            setTimeout(() => {
+                let processedCount = 0;
+                
+                images.forEach((image, index) => {
+                    // 创建Canvas进行图片处理
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    canvas.width = image.width;
+                    canvas.height = image.height;
+                    
+                    // 绘制图片
+                    const img = new Image();
+                    img.onload = function() {
+                        ctx.drawImage(img, 0, 0, image.width, image.height);
+                        
+                        // 生成文件名（在原文件名基础上添加尺寸信息）
+                        const originalName = image.file.name;
+                        const nameWithoutExt = originalName.substring(0, originalName.lastIndexOf('.'));
+                        const extension = originalName.substring(originalName.lastIndexOf('.'));
+                        const newFileName = `${nameWithoutExt}_${image.width}x${image.height}${extension}`;
+                        
+                        // 创建下载链接
+                        const link = document.createElement('a');
+                        link.download = newFileName;
+                        link.href = canvas.toDataURL('image/jpeg', 0.9);
+                        
+                        // 触发下载
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        
+                        processedCount++;
+                        
+                        // 如果是最后一张图片，隐藏处理中遮罩
+                        if (processedCount === images.length) {
+                            processingOverlay.style.display = 'none';
+                            alert(`已成功下载 ${images.length} 张图片！`);
+                        }
+                    };
+                    
+                    img.src = image.src;
+                });
+            }, 100);
+        }
+        
+        // 打包为ZIP下载
+        function downloadImagesAsZip() {
+            if (images.length === 0) return;
+            
+            // 显示处理中遮罩
+            processingOverlay.style.display = 'flex';
+            processingText.textContent = '正在打包图片，请稍候...';
+            
+            // 使用setTimeout让UI有机会更新
+            setTimeout(() => {
+                const zip = new JSZip();
+                let processedCount = 0;
+                
+                images.forEach((image, index) => {
+                    // 创建Canvas进行图片处理
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    canvas.width = image.width;
+                    canvas.height = image.height;
+                    
+                    // 绘制图片
+                    const img = new Image();
+                    img.onload = function() {
+                        ctx.drawImage(img, 0, 0, image.width, image.height);
+                        
+                        // 生成文件名（在原文件名基础上添加尺寸信息）
+                        const originalName = image.file.name;
+                        const nameWithoutExt = originalName.substring(0, originalName.lastIndexOf('.'));
+                        const extension = originalName.substring(originalName.lastIndexOf('.'));
+                        const newFileName = `${nameWithoutExt}_${image.width}x${image.height}${extension}`;
+                        
+                        // 将Canvas转换为Blob并添加到ZIP
+                        canvas.toBlob(function(blob) {
+                            zip.file(newFileName, blob);
+                            processedCount++;
+                            
+                            // 如果是最后一张图片，生成并下载ZIP文件
+                            if (processedCount === images.length) {
+                                zip.generateAsync({type: "blob"}).then(function(content) {
+                                    // 创建下载链接
+                                    const link = document.createElement('a');
+                                    link.download = `resized_images_${new Date().getTime()}.zip`;
+                                    link.href = URL.createObjectURL(content);
+                                    
+                                    // 触发下载
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    document.body.removeChild(link);
+                                    
+                                    // 清理URL对象
+                                    setTimeout(() => URL.revokeObjectURL(link.href), 100);
+                                    
+                                    // 隐藏处理中遮罩
+                                    processingOverlay.style.display = 'none';
+                                    alert(`已成功打包并下载 ${images.length} 张图片！`);
+                                });
+                            }
+                        }, 'image/jpeg', 0.9);
+                    };
+                    
+                    img.src = image.src;
+                });
+            }, 100);
+        }
+        
+        // 点击页面其他地方关闭下载选项菜单
+        document.addEventListener('click', function(e) {
+            if (!downloadOptions.contains(e.target) && e.target !== downloadAllBtn) {
+                downloadOptions.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
