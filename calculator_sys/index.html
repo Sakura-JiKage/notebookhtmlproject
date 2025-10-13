@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>科学计算器</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 图标 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .calculator-container {
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            max-width: 400px;
+            width: 100%;
+        }
+        
+        .calculator-header {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .calculator-title {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .mode-switch {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .display-container {
+            padding: 20px;
+            background-color: var(--dark-color);
+            color: white;
+            text-align: right;
+        }
+        
+        .calculation-display {
+            font-size: 1.2rem;
+            min-height: 30px;
+            opacity: 0.7;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .result-display {
+            font-size: 2.5rem;
+            font-weight: 600;
+            min-height: 60px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .buttons-container {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+        
+        .scientific-buttons {
+            display: none;
+            padding: 0 20px 20px;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+        
+        .calculator-button {
+            height: 60px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .calculator-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .calculator-button:active {
+            transform: translateY(0);
+        }
+        
+        .number-button {
+            background-color: var(--light-color);
+            color: var(--dark-color);
+        }
+        
+        .operation-button {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .function-button {
+            background-color: #95a5a6;
+            color: white;
+        }
+        
+        .equals-button {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        
+        .scientific-button {
+            background-color: #8e44ad;
+            color: white;
+            font-size: 1rem;
+        }
+        
+        .history-container {
+            max-height: 200px;
+            overflow-y: auto;
+            border-top: 1px solid #eee;
+            padding: 10px 20px;
+            display: none;
+        }
+        
+        .history-item {
+            padding: 5px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 0.9rem;
+        }
+        
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        
+        @media (max-width: 576px) {
+            .calculator-button {
+                height: 50px;
+                font-size: 1rem;
+            }
+            
+            .result-display {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-container">
+        <div class="calculator-header">
+            <h1 class="calculator-title">科学计算器</h1>
+            <div class="mode-switch">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="modeSwitch">
+                    <label class="form-check-label text-white" for="modeSwitch">科学模式</label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="display-container">
+            <div class="calculation-display" id="calculation">0</div>
+            <div class="result-display" id="result">0</div>
+        </div>
+        
+        <div class="scientific-buttons" id="scientificButtons">
+            <button class="calculator-button scientific-button" data-action="sin">sin</button>
+            <button class="calculator-button scientific-button" data-action="cos">cos</button>
+            <button class="calculator-button scientific-button" data-action="tan">tan</button>
+            <button class="calculator-button scientific-button" data-action="log">log</button>
+            <button class="calculator-button scientific-button" data-action="ln">ln</button>
+            <button class="calculator-button scientific-button" data-action="sqrt">√</button>
+            <button class="calculator-button scientific-button" data-action="power">x^y</button>
+            <button class="calculator-button scientific-button" data-action="factorial">x!</button>
+            <button class="calculator-button scientific-button" data-action="pi">π</button>
+            <button class="calculator-button scientific-button" data-action="e">e</button>
+        </div>
+        
+        <div class="buttons-container">
+            <button class="calculator-button function-button" data-action="clear">C</button>
+            <button class="calculator-button function-button" data-action="backspace">
+                <i class="fas fa-backspace"></i>
+            </button>
+            <button class="calculator-button function-button" data-action="percent">%</button>
+            <button class="calculator-button operation-button" data-action="divide">/</button>
+            
+            <button class="calculator-button number-button" data-number="7">7</button>
+            <button class="calculator-button number-button" data-number="8">8</button>
+            <button class="calculator-button number-button" data-number="9">9</button>
+            <button class="calculator-button operation-button" data-action="multiply">×</button>
+            
+            <button class="calculator-button number-button" data-number="4">4</button>
+            <button class="calculator-button number-button" data-number="5">5</button>
+            <button class="calculator-button number-button" data-number="6">6</button>
+            <button class="calculator-button operation-button" data-action="subtract">-</button>
+            
+            <button class="calculator-button number-button" data-number="1">1</button>
+            <button class="calculator-button number-button" data-number="2">2</button>
+            <button class="calculator-button number-button" data-number="3">3</button>
+            <button class="calculator-button operation-button" data-action="add">+</button>
+            
+            <button class="calculator-button number-button" data-number="0">0</button>
+            <button class="calculator-button number-button" data-action="decimal">.</button>
+            <button class="calculator-button function-button" data-action="toggleSign">±</button>
+            <button class="calculator-button equals-button" data-action="calculate">=</button>
+        </div>
+        
+        <div class="history-container" id="historyContainer">
+            <h6 class="text-center">计算历史</h6>
+            <div id="historyList"></div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 计算器状态
+            const calculator = {
+                displayValue: '0',
+                firstOperand: null,
+                waitingForSecondOperand: false,
+                operator: null,
+                calculation: '',
+                history: []
+            };
+            
+            // DOM 元素
+            const resultDisplay = document.getElementById('result');
+            const calculationDisplay = document.getElementById('calculation');
+            const scientificButtons = document.getElementById('scientificButtons');
+            const modeSwitch = document.getElementById('modeSwitch');
+            const historyContainer = document.getElementById('historyContainer');
+            const historyList = document.getElementById('historyList');
+            
+            // 更新显示
+            function updateDisplay() {
+                resultDisplay.textContent = calculator.displayValue;
+                calculationDisplay.textContent = calculator.calculation || '0';
+            }
+            
+            // 添加数字
+            function inputDigit(digit) {
+                const { displayValue, waitingForSecondOperand } = calculator;
+                
+                if (waitingForSecondOperand === true) {
+                    calculator.displayValue = digit;
+                    calculator.waitingForSecondOperand = false;
+                } else {
+                    calculator.displayValue = displayValue === '0' ? digit : displayValue + digit;
+                }
+                
+                updateDisplay();
+            }
+            
+            // 添加小数点
+            function inputDecimal() {
+                if (calculator.waitingForSecondOperand === true) {
+                    calculator.displayValue = '0.';
+                    calculator.waitingForSecondOperand = false;
+                    return;
+                }
+                
+                if (!calculator.displayValue.includes('.')) {
+                    calculator.displayValue += '.';
+                }
+                
+                updateDisplay();
+            }
+            
+            // 处理运算符
+            function handleOperator(nextOperator) {
+                const { firstOperand, displayValue, operator } = calculator;
+                const inputValue = parseFloat(displayValue);
+                
+                if (operator && calculator.waitingForSecondOperand) {
+                    calculator.operator = nextOperator;
+                    calculator.calculation = calculator.calculation.replace(/[+\-×/]$/, nextOperator);
+                    updateDisplay();
+                    return;
+                }
+                
+                if (firstOperand === null && !isNaN(inputValue)) {
+                    calculator.firstOperand = inputValue;
+                } else if (operator) {
+                    const result = performCalculation[operator](firstOperand, inputValue);
+                    
+                    calculator.displayValue = `${parseFloat(result.toFixed(7))}`;
+                    calculator.firstOperand = result;
+                }
+                
+                calculator.waitingForSecondOperand = true;
+                calculator.operator = nextOperator;
+                
+                // 更新计算表达式
+                if (calculator.calculation === '0' || calculator.calculation === '') {
+                    calculator.calculation = `${calculator.displayValue} ${nextOperator}`;
+                } else {
+                    calculator.calculation = `${calculator.calculation} ${calculator.displayValue} ${nextOperator}`;
+                }
+                
+                updateDisplay();
+            }
+            
+            // 执行计算
+            const performCalculation = {
+                '/': (firstOperand, secondOperand) => firstOperand / secondOperand,
+                '×': (firstOperand, secondOperand) => firstOperand * secondOperand,
+                '+': (firstOperand, secondOperand) => firstOperand + secondOperand,
+                '-': (firstOperand, secondOperand) => firstOperand - secondOperand,
+                '=': (firstOperand, secondOperand) => secondOperand
+            };
+            
+            // 重置计算器
+            function resetCalculator() {
+                calculator.displayValue = '0';
+                calculator.firstOperand = null;
+                calculator.waitingForSecondOperand = false;
+                calculator.operator = null;
+                calculator.calculation = '';
+                updateDisplay();
+            }
+            
+            // 删除最后一个字符
+            function backspace() {
+                if (calculator.displayValue.length > 1) {
+                    calculator.displayValue = calculator.displayValue.slice(0, -1);
+                } else {
+                    calculator.displayValue = '0';
+                }
+                updateDisplay();
+            }
+            
+            // 百分比计算
+            function calculatePercentage() {
+                const currentValue = parseFloat(calculator.displayValue);
+                calculator.displayValue = (currentValue / 100).toString();
+                updateDisplay();
+            }
+            
+            // 切换正负号
+            function toggleSign() {
+                const currentValue = parseFloat(calculator.displayValue);
+                calculator.displayValue = (-currentValue).toString();
+                updateDisplay();
+            }
+            
+            // 科学计算函数
+            function scientificFunction(action) {
+                const currentValue = parseFloat(calculator.displayValue);
+                let result;
+                
+                switch(action) {
+                    case 'sin':
+                        result = Math.sin(currentValue * (Math.PI / 180));
+                        calculator.calculation = `sin(${currentValue})`;
+                        break;
+                    case 'cos':
+                        result = Math.cos(currentValue * (Math.PI / 180));
+                        calculator.calculation = `cos(${currentValue})`;
+                        break;
+                    case 'tan':
+                        result = Math.tan(currentValue * (Math.PI / 180));
+                        calculator.calculation = `tan(${currentValue})`;
+                        break;
+                    case 'log':
+                        result = Math.log10(currentValue);
+                        calculator.calculation = `log(${currentValue})`;
+                        break;
+                    case 'ln':
+                        result = Math.log(currentValue);
+                        calculator.calculation = `ln(${currentValue})`;
+                        break;
+                    case 'sqrt':
+                        result = Math.sqrt(currentValue);
+                        calculator.calculation = `√(${currentValue})`;
+                        break;
+                    case 'power':
+                        calculator.firstOperand = currentValue;
+                        calculator.waitingForSecondOperand = true;
+                        calculator.operator = 'power';
+                        calculator.calculation = `${currentValue}^`;
+                        updateDisplay();
+                        return;
+                    case 'factorial':
+                        result = factorial(currentValue);
+                        calculator.calculation = `${currentValue}!`;
+                        break;
+                    case 'pi':
+                        result = Math.PI;
+                        calculator.calculation = 'π';
+                        break;
+                    case 'e':
+                        result = Math.E;
+                        calculator.calculation = 'e';
+                        break;
+                }
+                
+                calculator.displayValue = result.toString();
+                updateDisplay();
+                addToHistory(calculator.calculation, result);
+            }
+            
+            // 阶乘计算
+            function factorial(n) {
+                if (n < 0) return NaN;
+                if (n === 0 || n === 1) return 1;
+                let result = 1;
+                for (let i = 2; i <= n; i++) {
+                    result *= i;
+                }
+                return result;
+            }
+            
+            // 计算最终结果
+            function calculateResult() {
+                const { firstOperand, displayValue, operator } = calculator;
+                const inputValue = parseFloat(displayValue);
+                
+                if (operator === 'power') {
+                    const result = Math.pow(firstOperand, inputValue);
+                    calculator.displayValue = `${parseFloat(result.toFixed(7))}`;
+                    calculator.calculation = `${firstOperand}^${inputValue} = ${calculator.displayValue}`;
+                    addToHistory(calculator.calculation);
+                } else if (operator && firstOperand !== null) {
+                    const result = performCalculation[operator](firstOperand, inputValue);
+                    calculator.displayValue = `${parseFloat(result.toFixed(7))}`;
+                    calculator.calculation = `${calculator.calculation} ${inputValue} = ${calculator.displayValue}`;
+                    addToHistory(calculator.calculation);
+                }
+                
+                calculator.firstOperand = null;
+                calculator.waitingForSecondOperand = false;
+                calculator.operator = null;
+                updateDisplay();
+            }
+            
+            // 添加到历史记录
+            function addToHistory(calculation, result = null) {
+                const historyItem = {
+                    calculation: calculation,
+                    result: result || calculator.displayValue,
+                    timestamp: new Date().toLocaleTimeString()
+                };
+                
+                calculator.history.unshift(historyItem);
+                
+                // 只保留最近的10条记录
+                if (calculator.history.length > 10) {
+                    calculator.history.pop();
+                }
+                
+                updateHistoryDisplay();
+            }
+            
+            // 更新历史记录显示
+            function updateHistoryDisplay() {
+                historyList.innerHTML = '';
+                
+                calculator.history.forEach(item => {
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'history-item';
+                    historyItem.innerHTML = `
+                        <div class="d-flex justify-content-between">
+                            <span>${item.calculation}</span>
+                            <span class="text-muted">${item.timestamp}</span>
+                        </div>
+                        <div class="text-end fw-bold">${item.result}</div>
+                    `;
+                    historyList.appendChild(historyItem);
+                });
+            }
+            
+            // 切换计算器模式
+            modeSwitch.addEventListener('change', function() {
+                if (this.checked) {
+                    scientificButtons.style.display = 'grid';
+                    historyContainer.style.display = 'block';
+                    document.querySelector('.calculator-title').textContent = '科学计算器';
+                } else {
+                    scientificButtons.style.display = 'none';
+                    historyContainer.style.display = 'none';
+                    document.querySelector('.calculator-title').textContent = '计算器';
+                }
+            });
+            
+            // 按钮点击事件处理
+            document.querySelector('.buttons-container').addEventListener('click', function(event) {
+                const { target } = event;
+                
+                if (!target.matches('button')) {
+                    return;
+                }
+                
+                if (target.classList.contains('number-button')) {
+                    if (target.dataset.number) {
+                        inputDigit(target.dataset.number);
+                    } else if (target.dataset.action === 'decimal') {
+                        inputDecimal();
+                    }
+                    return;
+                }
+                
+                if (target.classList.contains('operation-button')) {
+                    handleOperator(target.textContent);
+                    return;
+                }
+                
+                if (target.classList.contains('function-button')) {
+                    if (target.dataset.action === 'clear') {
+                        resetCalculator();
+                    } else if (target.dataset.action === 'backspace') {
+                        backspace();
+                    } else if (target.dataset.action === 'percent') {
+                        calculatePercentage();
+                    } else if (target.dataset.action === 'toggleSign') {
+                        toggleSign();
+                    }
+                    return;
+                }
+                
+                if (target.classList.contains('equals-button')) {
+                    calculateResult();
+                    return;
+                }
+            });
+            
+            // 科学计算按钮点击事件
+            scientificButtons.addEventListener('click', function(event) {
+                const { target } = event;
+                
+                if (!target.matches('button')) {
+                    return;
+                }
+                
+                scientificFunction(target.dataset.action);
+            });
+            
+            // 初始化显示
+            updateDisplay();
+        });
+    </script>
+</body>
+</html>
