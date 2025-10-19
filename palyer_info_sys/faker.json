@@ -1,0 +1,13 @@
+{
+  "gameId": "Faker",
+  "realName": "李相赫",
+  "status": "retired",
+  "position": "中单",
+  "regions": ["LPL"],
+  "birthDate": "1997-04-05",
+  "age": 26,
+  "firstMatch": "2012-03-01",
+  "teams": ["Royal Club", "OMG", "QG", "RNG", "BLG"],
+  "honors": ["全球总决赛亚军(2013, 2014)", "MSI冠军(2018)", "LPL冠军(2018春季赛, 2018夏季赛)", "亚运会金牌(2018)"],
+  "image": "https://via.placeholder.com/180x220/007bff/ffffff?text=Uzi"
+}
