@@ -1,12 +1,11 @@
 {
-  "gameId": "Uzi",
+  "gameId": "Faker",
   "realName": "简自豪",
   "birthDate": "1997-04-05",
   "position": "ADC",
   "status": "active",
   "regions": ["LPL"],
   "firstMatch": "2013-01-01",
-  "retirementDate": null,
   "teams": ["Royal Club", "OMG", "QG", "RNG", "BLG"],
   "honors": ["2018年亚运会金牌", "2018年MSI冠军", "LPL春季赛冠军", "LPL夏季赛冠军"],
   "image": "res/playerimages/faker.jpg"

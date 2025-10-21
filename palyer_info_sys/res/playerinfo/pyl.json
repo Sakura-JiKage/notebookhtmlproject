@@ -1,13 +1,12 @@
 {
   "gameId": "Pyl",
   "realName": "陈博",
-  "birthDate": "1997-04-05",
-  "position": "ADC",
-  "status": "active",
+  "birthDate": "1994-04-25",
+  "position": "Support",
+  "status": "retired",
   "regions": ["LPL"],
-  "firstMatch": "2013-01-01",
-  "retirementDate": null,
-  "teams": ["Royal Club", "OMG", "QG", "RNG", "BLG"],
-  "honors": ["2018年亚运会金牌", "2018年MSI冠军", "LPL春季赛冠军", "LPL夏季赛冠军"],
+  "firstMatch": "2012-01-01",
+  "teams": ["LGD"],
+  "honors": ["2015年LPL夏季赛冠军", "2015年LPL年度最佳辅助", "2015年德玛西亚杯冠军"],
   "image": "res/playerimages/pyl.jpg"
 }
