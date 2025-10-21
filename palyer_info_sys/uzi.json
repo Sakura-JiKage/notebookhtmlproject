@@ -1,13 +1,12 @@
 {
   "gameId": "Uzi",
   "realName": "简自豪",
-  "status": "retired",
-  "position": "ADC",
-  "regions": ["LPL"],
   "birthDate": "1997-04-05",
-  "age": 26,
-  "firstMatch": "2012-03-01",
+  "position": "ADC",
+  "status": "active",
+  "regions": ["LPL"],
+  "firstMatch": "2013-01-01",
   "teams": ["Royal Club", "OMG", "QG", "RNG", "BLG"],
-  "honors": ["全球总决赛亚军(2013, 2014)", "MSI冠军(2018)", "LPL冠军(2018春季赛, 2018夏季赛)", "亚运会金牌(2018)"],
-  "image": "https://via.placeholder.com/180x220/007bff/ffffff?text=Uzi"
+  "honors": ["2018年亚运会金牌", "2018年MSI冠军", "LPL春季赛冠军", "LPL夏季赛冠军"],
+  "image": "player_images/uzi.jpg"
 }
