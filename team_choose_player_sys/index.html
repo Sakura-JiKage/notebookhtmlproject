@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -274,6 +275,37 @@
             font-weight: bold;
             word-break: break-word;
             white-space: normal;
+        }
+
+        .player-name-static-href {
+            color: #212529;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid transparent;
+            padding-bottom: 1px;
+            display: inline-block;
+            max-width: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+        .player-name-static-href:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+            border-bottom: 1px solid var(--primary-color);
+            transform: translateY(-1px);
+        }
+
+        .player-name-static-href:active {
+            transform: translateY(0);
+        }
+
+        /* 确保在有身份标签时也能正确显示 */
+        .player-name-static .player-name-static-href {
+            margin-right: 4px;
         }
 
         .member-right {
@@ -687,7 +719,7 @@
         .tooltip-inner {
             font-size: 0.7rem;
         }
-        
+
         /* 自定义模态框样式 */
         .custom-modal {
             position: fixed;
@@ -704,12 +736,12 @@
             visibility: hidden;
             transition: all 0.3s ease;
         }
-        
+
         .custom-modal.show {
             opacity: 1;
             visibility: visible;
         }
-        
+
         .custom-modal-content {
             background-color: white;
             border-radius: 12px;
@@ -721,11 +753,11 @@
             transform: translateY(-20px);
             transition: transform 0.3s ease;
         }
-        
+
         .custom-modal.show .custom-modal-content {
             transform: translateY(0);
         }
-        
+
         .custom-modal-header {
             padding: 20px 24px 0;
             border-bottom: none;
@@ -733,14 +765,14 @@
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .custom-modal-title {
             font-size: 1.25rem;
             font-weight: 600;
             color: #343a40;
             margin: 0;
         }
-        
+
         .custom-modal-close {
             background: none;
             border: none;
@@ -749,33 +781,33 @@
             cursor: pointer;
             transition: color 0.2s;
         }
-        
+
         .custom-modal-close:hover {
             color: #343a40;
         }
-        
+
         .custom-modal-body {
             padding: 24px;
         }
-        
+
         .custom-modal-footer {
             padding: 0 24px 24px;
             display: flex;
             justify-content: flex-end;
             gap: 12px;
         }
-        
+
         .custom-input-group {
             margin-bottom: 20px;
         }
-        
+
         .custom-input-label {
             display: block;
             margin-bottom: 8px;
             font-weight: 500;
             color: #495057;
         }
-        
+
         .custom-input {
             width: 100%;
             padding: 12px 16px;
@@ -785,13 +817,13 @@
             transition: all 0.2s;
             box-sizing: border-box;
         }
-        
+
         .custom-input:focus {
             border-color: var(--primary-color);
             outline: none;
             box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
         }
-        
+
         .custom-select {
             width: 100%;
             padding: 12px 16px;
@@ -807,13 +839,13 @@
             background-position: right 16px center;
             background-size: 16px;
         }
-        
+
         .custom-select:focus {
             border-color: var(--primary-color);
             outline: none;
             box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
         }
-        
+
         .custom-btn {
             padding: 10px 20px;
             border: none;
@@ -822,27 +854,27 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-        
+
         .custom-btn-primary {
             background-color: var(--primary-color);
             color: white;
         }
-        
+
         .custom-btn-primary:hover {
             background-color: #0b5ed7;
             transform: translateY(-1px);
         }
-        
+
         .custom-btn-secondary {
             background-color: #6c757d;
             color: white;
         }
-        
+
         .custom-btn-secondary:hover {
             background-color: #5c636a;
             transform: translateY(-1px);
         }
-        
+
         .player-identity {
             font-size: 0.6rem;
             font-weight: bold;
@@ -850,12 +882,12 @@
             border-radius: 4px;
             margin-left: 4px;
         }
-        
+
         .identity-队长 {
             background-color: #ffd700;
             color: #8b6914;
         }
-        
+
         .identity-队员 {
             background-color: #6c757d;
             color: white;
@@ -1369,11 +1401,11 @@
                 return new Promise((resolve, reject) => {
                     modalResolve = resolve;
                     modalReject = reject;
-                    
+
                     modalTitle.textContent = title;
                     inputLabel.textContent = label;
                     modalInput.value = defaultValue;
-                    
+
                     // 根据类型显示/隐藏不同的输入控件
                     if (type === 'text') {
                         modalInput.style.display = 'block';
@@ -1390,7 +1422,7 @@
                         identityGroup.style.display = 'block';
                         modalIdentity.value = defaultValue;
                     }
-                    
+
                     modal.classList.add('show');
                     modalInput.focus();
                 });
@@ -1416,7 +1448,7 @@
                 } else if (identityGroup.style.display === 'block') {
                     value = modalIdentity.value;
                 }
-                
+
                 if (modalResolve) {
                     modalResolve(value);
                     modalResolve = null;
@@ -1431,14 +1463,14 @@
             modalConfirmBtn.addEventListener('click', confirmModal);
 
             // 点击模态框外部关闭
-            modal.addEventListener('click', function(event) {
+            modal.addEventListener('click', function (event) {
                 if (event.target === modal) {
                     closeModal();
                 }
             });
 
             // 按Enter确认，按Esc取消
-            modalInput.addEventListener('keydown', function(event) {
+            modalInput.addEventListener('keydown', function (event) {
                 if (event.key === 'Enter') {
                     confirmModal();
                 } else if (event.key === 'Escape') {
@@ -1446,7 +1478,7 @@
                 }
             });
 
-            modalSelect.addEventListener('keydown', function(event) {
+            modalSelect.addEventListener('keydown', function (event) {
                 if (event.key === 'Enter') {
                     confirmModal();
                 } else if (event.key === 'Escape') {
@@ -1454,7 +1486,7 @@
                 }
             });
 
-            modalIdentity.addEventListener('keydown', function(event) {
+            modalIdentity.addEventListener('keydown', function (event) {
                 if (event.key === 'Enter') {
                     confirmModal();
                 } else if (event.key === 'Escape') {
@@ -1468,7 +1500,7 @@
             addScheduleBtn.addEventListener('click', addSchedule);
 
             // 点击赛程模态框外部关闭
-            scheduleModal.addEventListener('click', function(event) {
+            scheduleModal.addEventListener('click', function (event) {
                 if (event.target === scheduleModal) {
                     closeScheduleModal();
                 }
@@ -1550,7 +1582,7 @@
 
                     // 根据排序方式渲染成员
                     let membersToRender = [...team.members];
-                    
+
                     if (sortMethod === 'position') {
                         // 位置排序
                         membersToRender.sort((a, b) => {
@@ -1578,7 +1610,7 @@
                             const memberItem = createMemberItem(member, team.id);
                             teamMembers.appendChild(memberItem);
                         });
-                        
+
                         // 补充空位
                         const remainingSlots = 5 - membersToRender.length;
                         for (let i = 0; i < remainingSlots; i++) {
@@ -1616,8 +1648,14 @@
 
                 const playerNameStatic = document.createElement('div');
                 playerNameStatic.className = 'player-name-static';
-                playerNameStatic.textContent = member.name;
-                
+                //playerNameStatic.textContent = member.name;
+
+                const playerNameStatichref = document.createElement('a');
+                playerNameStatichref.className = 'player-name-static-href';
+                playerNameStatichref.href = "https://sakura-jikage.github.io/notebookhtmlproject/palyer_info_sys/index.html?player=" + member.name.toLowerCase();
+                playerNameStatichref.textContent = member.name;
+                playerNameStatic.appendChild(playerNameStatichref);
+
                 // 添加身份标识
                 if (member.identity === '队长') {
                     const identityTag = document.createElement('span');
@@ -1761,7 +1799,13 @@
 
                 const playerNameText = document.createElement('span');
                 playerNameText.className = 'player-name-text';
-                playerNameText.textContent = player.name;
+                //playerNameText.textContent = player.name;
+
+                const playerNameStatichref = document.createElement('a');
+                playerNameStatichref.className = 'player-name-static-href';
+                playerNameStatichref.href = "https://sakura-jikage.github.io/notebookhtmlproject/palyer_info_sys/index.html?player=" + player.name.toLowerCase();
+                playerNameStatichref.textContent = player.name;
+                playerNameText.appendChild(playerNameStatichref);
 
                 const playerLevel = document.createElement('span');
                 playerLevel.className = `player-level-pool level-${player.level}`;
@@ -1893,7 +1937,7 @@
 
                     // 解析比分
                     const [homeScore, awayScore] = schedule.score.split('-').map(Number);
-                    
+
                     // 确定胜负结果
                     let homeResult, awayResult;
                     if (homeScore > awayScore) {
@@ -2028,7 +2072,7 @@
                 try {
                     // 获取当前所有队伍名称
                     const teamNames = teams.map(team => team.name).filter(name => name);
-                    
+
                     if (teamNames.length < 2) {
                         alert('至少需要两个队伍才能创建对阵！');
                         return;
@@ -2116,10 +2160,10 @@
                 return new Promise((resolve, reject) => {
                     modalResolve = resolve;
                     modalReject = reject;
-                    
+
                     modalTitle.textContent = title;
                     selectLabel.textContent = label;
-                    
+
                     // 清空并填充选择框
                     modalSelect.innerHTML = '';
                     options.forEach(option => {
@@ -2128,16 +2172,16 @@
                         optionElement.textContent = option;
                         modalSelect.appendChild(optionElement);
                     });
-                    
+
                     if (defaultValue) {
                         modalSelect.value = defaultValue;
                     }
-                    
+
                     // 显示选择框，隐藏输入框
                     selectGroup.style.display = 'block';
                     modalInput.style.display = 'none';
                     identityGroup.style.display = 'none';
-                    
+
                     // 显示模态框
                     modal.classList.add('show');
                     modalSelect.focus();
@@ -2697,37 +2741,37 @@
                     // 计算最大可分配人数
                     const totalAvailablePlayers = availablePlayers.length + currentPlayersCount;
                     targetPlayersPerTeam = Math.floor(totalAvailablePlayers / teamCount);
-                    
+
                     if (targetPlayersPerTeam < 1) {
                         alert('选手数量太少，无法进行有效分配！');
                         return;
                     }
-                    
+
                     console.log(`选手数量不足，调整为每队${targetPlayersPerTeam}人`);
                 }
 
                 // 按等级权重排序可用选手（从高到低）
-                const sortedPlayers = [...availablePlayers].sort((a, b) => 
+                const sortedPlayers = [...availablePlayers].sort((a, b) =>
                     levelWeights[b.level] - levelWeights[a.level]
                 );
 
                 // 计算各队伍当前实力
-                const teamPowers = teams.map(team => 
+                const teamPowers = teams.map(team =>
                     team.members.reduce((sum, player) => sum + levelWeights[player.level], 0)
                 );
 
                 // 计算各队伍还需要补充的选手数量
-                const playersNeededPerTeam = teams.map(team => 
+                const playersNeededPerTeam = teams.map(team =>
                     Math.max(0, targetPlayersPerTeam - team.members.length)
                 );
 
                 // 智能分配选手
                 let remainingPlayers = [...sortedPlayers];
-                
+
                 // 为每个需要补充选手的队伍分配选手
                 while (remainingPlayers.length > 0) {
                     let assigned = false;
-                    
+
                     // 按照实力从低到高的顺序为队伍分配选手（保证实力均衡）
                     const teamIndices = teams
                         .map((team, index) => ({ index, power: teamPowers[index], needed: playersNeededPerTeam[index] }))
@@ -2739,7 +2783,7 @@
 
                     for (const teamIndex of teamIndices) {
                         const team = teams[teamIndex];
-                        
+
                         if (team.members.length >= targetPlayersPerTeam) continue;
 
                         // 为队伍分配选手（不限制位置）
@@ -2748,13 +2792,13 @@
                             team.members.push(player);
                             teamPowers[teamIndex] += levelWeights[player.level];
                             playersNeededPerTeam[teamIndex]--;
-                            
+
                             // 从选手池中移除该选手
                             const posIndex = playersByPosition[player.position].findIndex(p => p.id === player.id);
                             if (posIndex !== -1) {
                                 playersByPosition[player.position].splice(posIndex, 1);
                             }
-                            
+
                             assigned = true;
                         }
                     }
@@ -2772,7 +2816,7 @@
 
                 renderTeams();
                 renderPlayerPool();
-                
+
                 // 显示分配结果
                 let resultMessage = "阵容生成完成！\n\n分配结果：\n";
                 teams.forEach(team => {
@@ -2858,7 +2902,7 @@
                 document.getElementById('importBtn').addEventListener('click', importData);
 
                 // 排序选择事件
-                document.getElementById('sortSelect').addEventListener('change', function(e) {
+                document.getElementById('sortSelect').addEventListener('change', function (e) {
                     sortMethod = e.target.value;
                     renderTeams();
                 });
@@ -2869,4 +2913,5 @@
         });
     </script>
 </body>
+
 </html>
