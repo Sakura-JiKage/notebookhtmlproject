@@ -154,7 +154,7 @@
             
             try {
                 // 直接使用相对路径加载JSON文件
-                const response = await fetch(`${playerId}.json`);
+                const response = await fetch(`res/playerinfo/${playerId}.json`);
                 
                 if (!response.ok) {
                     throw new Error(`文件未找到: ${playerId}.json`);
@@ -236,7 +236,7 @@
                         <div class="card">
                             <div class="card-content">
                                 <div class="player-img-container">
-                                    <img src="${playerData.image || 'https://via.placeholder.com/180x220/cccccc/969696?text=No+Image'}" 
+                                    <img src="${playerData.image}"
                                          class="player-img" alt="${playerData.gameId}">
                                     <span class="status-badge ${playerData.status === 'active' ? 'bg-success' : 'bg-danger'}">
                                         ${playerData.status === 'active' ? '现役' : '退役'}
