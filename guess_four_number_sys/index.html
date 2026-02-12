@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>猜数字·同步竞速 —— 密码整合·界面更净</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+        }
+        body {
+            background: linear-gradient(165deg, #0a1b21 0%, #103138 100%);
+            min-height: 100vh;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* 开始界面 - 全屏居中 */
+        .start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(165deg, #0a1b21 0%, #103138 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        .start-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .start-btn {
+            background: #ffc857;
+            border: none;
+            border-radius: 80px;
+            padding: 24px 72px;
+            font-size: 42px;
+            font-weight: 800;
+            color: #06222a;
+            box-shadow: 0 16px 0 #9e6b2b, 0 20px 40px black;
+            cursor: pointer;
+            border: 2px solid #ffdd9a;
+            transition: 0.06s;
+            letter-spacing: 8px;
+        }
+        .start-btn:active {
+            transform: translateY(16px);
+            box-shadow: 0 6px 0 #8a5e26, 0 20px 40px black;
+        }
+        
+        /* 数字输入界面 - 设密阶段 */
+        .setup-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(165deg, #0a1b21 0%, #103138 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 90;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+        }
+        .setup-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .setup-box {
+            background: rgba(20, 50, 60, 0.9);
+            backdrop-filter: blur(12px);
+            padding: 48px 60px;
+            border-radius: 80px;
+            border: 2px solid #4bbaca;
+            box-shadow: 0 20px 30px black;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 36px;
+        }
+        .setup-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: #ffeaa5;
+            text-shadow: 0 0 10px #ffd966;
+        }
+        .secret-setup-input {
+            background: #1f444f;
+            border: 4px solid #3899ad;
+            border-radius: 60px;
+            padding: 20px 36px;
+            font-size: 56px;
+            font-family: 'Courier New', monospace;
+            font-weight: 800;
+            letter-spacing: 20px;
+            color: #ffe684;
+            text-align: center;
+            outline: none;
+            width: 400px;
+            max-width: 80vw;
+        }
+        .secret-setup-input:focus {
+            border-color: #ffc164;
+            box-shadow: 0 0 30px #ffe184;
+        }
+        .setup-hint {
+            color: #b1e6eb;
+            font-size: 22px;
+        }
+        
+        /* 主PK界面 - 初始隐藏 */
+        .pk-container {
+            max-width: 1400px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            justify-content: center;
+            margin-bottom: 20px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.6s ease, visibility 0.6s ease;
+        }
+        .pk-container.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* 顶部密码区域 - 只剩电脑密码 */
+        .top-secret {
+            display: flex;
+            justify-content: flex-start;
+            width: 100%;
+        }
+        
+        .secret-panel {
+            width: 100%;
+            max-width: 600px;
+            background: rgba(20, 50, 60, 0.8);
+            backdrop-filter: blur(12px);
+            border-radius: 32px;
+            padding: 20px 28px;
+            border: 1px solid #4bbaca;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .secret-label {
+            font-size: 22px;
+            color: #c3f0f5;
+        }
+        
+        .secret-value {
+            font-family: 'Courier New', monospace;
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: 10px;
+            background: #143b45;
+            padding: 8px 28px;
+            border-radius: 50px;
+            color: #ffe484;
+        }
+        
+        /* 猜测区域 - 左右并排 */
+        .guess-row {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            align-items: stretch;
+        }
+        
+        /* ===== 玩家区域（突出、亮色、操作区明显） ===== */
+        .player-column {
+            flex: 3;
+            min-width: 500px;
+            background: linear-gradient(145deg, #1e4a57, #15404b);
+            backdrop-filter: blur(8px);
+            border-radius: 48px;
+            padding: 28px 28px;
+            border: 3px solid #ffcf6e;
+            box-shadow: 0 0 30px rgba(255, 200, 100, 0.3), 0 10px 30px black;
+        }
+        
+        /* ===== 电脑区域（窄、暗、被动、仅查看） ===== */
+        .ai-column {
+            flex: 1.2;
+            min-width: 280px;
+            background: rgba(12, 30, 36, 0.6);
+            backdrop-filter: blur(4px);
+            border-radius: 32px;
+            padding: 22px 18px;
+            border: 1px solid #2c6a76;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.6), 0 5px 15px black;
+            opacity: 0.85;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .column-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 0 5px;
+        }
+        
+        .player-column .column-title {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(145deg, #ffeeb5, #ffe070);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 15px #ffb86b;
+        }
+        
+        .ai-column .column-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #8faeb7;
+            text-shadow: none;
+            -webkit-text-fill-color: #8faeb7;
+            background: none;
+        }
+        
+        .round-badge {
+            background: #1e4e5a;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 20px;
+            font-weight: 600;
+            color: #ffefb2;
+            border: 1px solid #6fcbdd;
+        }
+        
+        .ai-column .round-badge {
+            background: #183a42;
+            color: #b4c9cc;
+            border: 1px solid #3e7983;
+            font-size: 18px;
+            padding: 6px 16px;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .digit-input {
+            flex: 1;
+            min-width: 180px;
+            background: #1f444f;
+            border: 2px solid #3899ad;
+            border-radius: 60px;
+            padding: 16px 24px;
+            font-size: 28px;
+            font-family: 'Courier New', monospace;
+            font-weight: 700;
+            letter-spacing: 12px;
+            color: #ffe684;
+            text-align: center;
+            outline: none;
+            box-shadow: 0 0 15px rgba(56, 153, 173, 0.3);
+        }
+        .digit-input:focus {
+            border-color: #ffc164;
+            background: #1e4d59;
+            box-shadow: 0 0 25px #ffe184;
+        }
+        .digit-input:disabled {
+            opacity: 0.5;
+            background: #1a3a42;
+            color: #b8ad7a;
+        }
+        
+        .btn {
+            background: #ffc857;
+            border: none;
+            border-radius: 60px;
+            padding: 16px 32px;
+            font-size: 22px;
+            font-weight: 700;
+            color: #06222a;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 8px 0 #9e6b2b, 0 6px 16px black;
+            transition: 0.04s;
+            cursor: pointer;
+            border: 1px solid #ffdd9a;
+        }
+        .btn:active {
+            transform: translateY(8px);
+            box-shadow: 0 2px 0 #8a5e26, 0 10px 20px black;
+        }
+        .btn:disabled {
+            opacity: 0.4;
+            transform: none;
+            box-shadow: 0 6px 0 #6a4d23;
+            pointer-events: none;
+        }
+        
+        .history-box {
+            flex: 1;
+            background: #0b2228;
+            border-radius: 28px;
+            padding: 16px;
+            overflow-y: auto;
+            border: 1px solid #2f747e;
+        }
+        
+        /* 玩家历史条目 - 鲜明 */
+        .player-column .history-box {
+            background: #0f2a31;
+            border: 1px solid #4caaba;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.7);
+            height: 360px;
+        }
+        
+        /* 电脑历史条目 - 更暗 */
+        .ai-column .history-box {
+            background: #0a1e23;
+            border: 1px solid #1e545e;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+            padding: 12px;
+            height: 300px;
+            margin-bottom: 0;
+        }
+        
+        .guess-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 8px 0;
+            padding: 12px 20px;
+            border-radius: 50px;
+            color: white;
+        }
+        
+        /* 玩家猜测条目 - 亮色左边框 */
+        .player-column .guess-item {
+            background: #1a414b;
+            border-left: 12px solid #4caaba;
+        }
+        
+        /* 电脑猜测条目 - 暗色、细边框 */
+        .ai-column .guess-item {
+            background: #132e35;
+            border-left: 4px solid #2a636b;
+            padding: 8px 14px;
+            margin: 6px 0;
+        }
+        
+        .round-tag {
+            background: #11505e;
+            padding: 4px 14px;
+            border-radius: 30px;
+            font-weight: 600;
+            color: #ffeda6;
+            font-size: 16px;
+        }
+        
+        .ai-column .round-tag {
+            background: #0a3a42;
+            color: #bbd3d6;
+            font-size: 14px;
+            padding: 3px 10px;
+        }
+        
+        .guess-value {
+            font-family: 'Courier New', monospace;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: 6px;
+            color: #ffe48f;
+        }
+        
+        .ai-column .guess-value {
+            font-size: 22px;
+            letter-spacing: 4px;
+            color: #d4c288;
+        }
+        
+        .correct-count {
+            background: #1f6a4a;
+            padding: 4px 16px;
+            border-radius: 40px;
+            font-size: 20px;
+            font-weight: 700;
+            color: #e3ffcd;
+        }
+        
+        .ai-column .correct-count {
+            background: #14523a;
+            color: #b8e0c0;
+            font-size: 18px;
+            padding: 3px 12px;
+        }
+        
+        .win-banner {
+            margin-top: 20px;
+            background: #79c2ad;
+            color: #002a24;
+            font-weight: 800;
+            font-size: 24px;
+            padding: 16px 22px;
+            border-radius: 50px;
+            text-align: center;
+            border: 2px solid #ffffbc;
+        }
+        
+        .ai-column .win-banner {
+            font-size: 20px;
+            padding: 12px 16px;
+            background: #4d8f83;
+            margin-top: 15px;
+        }
+        
+        /* ===== 电脑区域顶部：整合「你设定的密码」=  */
+        .ai-secret-container {
+            background: #0f2e35;
+            border-radius: 28px;
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #3e8893;
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.5);
+        }
+        
+        .ai-secret-label {
+            font-size: 18px;
+            color: #b1e0e6;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .ai-secret-value {
+            font-family: 'Courier New', monospace;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: 8px;
+            background: #124049;
+            padding: 6px 22px;
+            border-radius: 40px;
+            color: #ffde7a;
+            border: 1px solid #5fb3c2;
+        }
+        
+        .status-badge {
+            background: #1d4e58;
+            padding: 10px 18px;
+            border-radius: 36px;
+            color: #e1ffd0;
+            font-size: 18px;
+            font-weight: 500;
+            text-align: center;
+        }
+        
+        .ai-column .status-badge {
+            background: #103a42;
+            color: #b5dbd0;
+            font-size: 16px;
+            padding: 8px 14px;
+            border: 1px solid #2a6873;
+            margin-bottom: 16px;
+        }
+        
+        .restart-area {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            width: 100%;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.6s ease, visibility 0.6s ease;
+        }
+        .restart-area.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .restart-btn {
+            background: #4f9aa8;
+            box-shadow: 0 8px 0 #2e5e67;
+            color: white;
+            font-size: 26px;
+            padding: 18px 58px;
+            border-radius: 60px;
+            border: 1px solid #b7f0ff;
+        }
+        
+        .footer-note {
+            margin-top: 20px;
+            color: #b6dce3;
+            text-align: center;
+            font-size: 18px;
+            width: 100%;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.6s ease, visibility 0.6s ease;
+        }
+        .footer-note.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+    </style>
+</head>
+<body>
+    <!-- 开始界面：只显示开始游戏按钮（首次加载用） -->
+    <div id="startScreen" class="start-screen">
+        <button id="startBtn" class="start-btn">🎮 开始游戏</button>
+    </div>
+    
+    <!-- 设密界面：输入四位数字作为电脑猜题目标 -->
+    <div id="setupScreen" class="setup-screen hidden">
+        <div class="setup-box">
+            <div class="setup-title">✍️ 设定电脑要猜的数字</div>
+            <input type="text" id="secretSetupInput" class="secret-setup-input" placeholder="四位数字" maxlength="4" inputmode="numeric">
+            <div class="setup-hint">⏎ 回车确认，开始PK</div>
+        </div>
+    </div>
+
+    <!-- 主PK界面：你设定的密码已整合到电脑区域顶部 -->
+    <div id="pkContainer" class="pk-container">
+        <!-- 顶部：只显示电脑密码（你要猜的目标） -->
+        <div class="top-secret">
+            <div class="secret-panel">
+                <span class="secret-label">🤖 电脑密码（你要猜的）</span>
+                <span class="secret-value" id="computerSecretMask">????</span>
+            </div>
+        </div>
+        
+        <!-- 左右并排：玩家区域 vs 电脑区域 -->
+        <div class="guess-row">
+            <!-- ===== 左侧：玩家区域 - 突出、操作区 ===== -->
+            <div class="player-column">
+                <div class="column-header">
+                    <span class="column-title">🧑‍💻 你的回合 · 猜电脑</span>
+                    <span class="round-badge" id="humanRoundDisplay">第 0 轮</span>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="humanGuessInput" class="digit-input" placeholder="四位数字" maxlength="4" inputmode="numeric" autofocus>
+                    <button id="humanGuessBtn" class="btn">⚡ 猜</button>
+                </div>
+                <!-- 你的历史记录 -->
+                <div id="humanHistoryList" class="history-box">
+                    <div style="color: #79b5c2; text-align: center; padding: 30px;">✨ 等待你的第一次猜测</div>
+                </div>
+                <div id="humanWinMessage" class="win-banner" style="display: none;"></div>
+            </div>
+            
+            <!-- ===== 右侧：电脑区域 - 窄、暗、仅查看 ===== -->
+            <div class="ai-column">
+                <div class="column-header">
+                    <span class="column-title">🤖 电脑猜测</span>
+                    <span class="round-badge" id="aiRoundDisplay">第 0 轮</span>
+                </div>
+                
+                <!-- 【整合】你设定的密码 - 移动到电脑区域顶部 -->
+                <div class="ai-secret-container">
+                    <span class="ai-secret-label">🔐 你设定的密码</span>
+                    <span class="ai-secret-value" id="humanSecretMask">????</span>
+                </div>
+                
+                <div id="secretHint" class="status-badge" style="margin-bottom: 16px;">
+                    ⚙️ 同步猜数中
+                </div>
+                <!-- 电脑历史记录 -->
+                <div id="aiHistoryList" class="history-box">
+                    <div style="color: #6f9fab; text-align: center; padding: 20px; font-size: 16px;">🤖 等待电脑猜测</div>
+                </div>
+                <div id="aiWinMessage" class="win-banner" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 重新开始按钮 & 页脚 -->
+    <div id="restartArea" class="restart-area">
+        <button id="restartGameBtn" class="btn restart-btn">⟲ 重新开始游戏</button>
+    </div>
+    <div id="footerNote" class="footer-note">
+        🎯 同步竞速 · 你猜1次，电脑自动猜1次 · 你设定的密码已在电脑区域顶部显示
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ---------- 通用工具 ----------
+            function generateRandomSecret() {
+                return Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+            }
+
+            function countExactMatches(secret, guess) {
+                if (!secret || !guess || secret.length !== 4 || guess.length !== 4) return 0;
+                let correct = 0;
+                for (let i = 0; i < 4; i++) {
+                    if (secret[i] === guess[i]) correct++;
+                }
+                return correct;
+            }
+
+            // ---------- DOM 元素 ----------
+            // 界面层
+            const startScreen = document.getElementById('startScreen');
+            const setupScreen = document.getElementById('setupScreen');
+            const pkContainer = document.getElementById('pkContainer');
+            const restartArea = document.getElementById('restartArea');
+            const footerNote = document.getElementById('footerNote');
+            
+            // 按钮/输入
+            const startBtn = document.getElementById('startBtn');
+            const secretSetupInput = document.getElementById('secretSetupInput');
+            const restartBtn = document.getElementById('restartGameBtn');
+            
+            // 左侧（你的区域）
+            const humanGuessInput = document.getElementById('humanGuessInput');
+            const humanGuessBtn = document.getElementById('humanGuessBtn');
+            const humanHistoryList = document.getElementById('humanHistoryList');
+            const humanWinMessage = document.getElementById('humanWinMessage');
+            const computerSecretMask = document.getElementById('computerSecretMask');
+            const humanRoundDisplay = document.getElementById('humanRoundDisplay');
+            
+            // 右侧（电脑区域）- 注意humanSecretMask现在在电脑区域内
+            const humanSecretMask = document.getElementById('humanSecretMask');
+            const aiHistoryList = document.getElementById('aiHistoryList');
+            const aiWinMessage = document.getElementById('aiWinMessage');
+            const aiRoundDisplay = document.getElementById('aiRoundDisplay');
+            const secretHint = document.getElementById('secretHint');
+
+            // ---------- 游戏状态 ----------
+            // 左侧：人类猜电脑
+            let computerSecret = generateRandomSecret();
+            let humanGuesses = [];
+            let humanGameFinished = false;
+
+            // 右侧：电脑猜人类
+            let humanSecret = null;
+            let aiGuesses = [];
+            let aiGameFinished = false;
+
+            // 电脑AI 候选集
+            let aiPossibleCodes = [];
+            let gameOverallWinner = null;
+
+            // ---------- 界面控制 ----------
+            function showStartScreen() {
+                startScreen.classList.remove('hidden');
+                setupScreen.classList.add('hidden');
+                pkContainer.classList.remove('visible');
+                restartArea.classList.remove('visible');
+                footerNote.classList.remove('visible');
+            }
+            
+            function showSetupScreen() {
+                startScreen.classList.add('hidden');
+                setupScreen.classList.remove('hidden');
+                pkContainer.classList.remove('visible');
+                restartArea.classList.remove('visible');
+                footerNote.classList.remove('visible');
+                secretSetupInput.value = '';
+                setTimeout(() => secretSetupInput.focus(), 100);
+            }
+            
+            function showPKScreen() {
+                startScreen.classList.add('hidden');
+                setupScreen.classList.add('hidden');
+                pkContainer.classList.add('visible');
+                restartArea.classList.add('visible');
+                footerNote.classList.add('visible');
+                setTimeout(() => humanGuessInput.focus(), 200);
+            }
+
+            // ---------- 游戏逻辑函数 ----------
+            function initAICandidates() {
+                aiPossibleCodes = [];
+                for (let i = 0; i < 10000; i++) {
+                    aiPossibleCodes.push(i.toString().padStart(4, '0'));
+                }
+            }
+
+            function filterCandidates(lastGuess, lastCorrect) {
+                const newCandidates = [];
+                for (let code of aiPossibleCodes) {
+                    if (countExactMatches(code, lastGuess) === lastCorrect) {
+                        newCandidates.push(code);
+                    }
+                }
+                aiPossibleCodes = newCandidates;
+            }
+
+            function pickNextGuess() {
+                if (aiPossibleCodes.length === 0) return null;
+                if (aiGuesses.length === 0) return '0123';
+                return aiPossibleCodes[0];
+            }
+
+            // ---------- 结束游戏（只显示赢家）--------
+            function endGame(winner) {
+                gameOverallWinner = winner;
+                
+                humanGameFinished = true;
+                humanGuessBtn.disabled = true;
+                humanGuessInput.disabled = true;
+                
+                aiGameFinished = true;
+
+                if (winner === 'human') {
+                    humanWinMessage.style.display = 'block';
+                    humanWinMessage.innerHTML = `🎉 你猜中了电脑的数字 ${computerSecret}  · 共 ${humanGuesses.length} 轮 · 你赢了！ 🎉`;
+                    if (humanSecret) humanSecretMask.textContent = humanSecret;
+                } else if (winner === 'ai') {
+                    aiWinMessage.style.display = 'block';
+                    aiWinMessage.innerHTML = `🤖 电脑猜中了你的数字 ${humanSecret}  · 共 ${aiGuesses.length} 轮 · 电脑赢了！ 🤖`;
+                    computerSecretMask.textContent = computerSecret;
+                }
+            }
+
+            // ---------- 人类提交猜测 ----------
+            function submitHumanGuess() {
+                if (humanGameFinished || gameOverallWinner) return false;
+                
+                let raw = humanGuessInput.value.trim().replace(/\D/g, '');
+                if (raw.length !== 4) {
+                    alert('请输入恰好四位数字');
+                    humanGuessInput.value = '';
+                    humanGuessInput.focus();
+                    return false;
+                }
+                if (humanGuesses.some(g => g.guess === raw)) {
+                    alert(`你已经猜过 ${raw} 了`);
+                    humanGuessInput.value = '';
+                    humanGuessInput.focus();
+                    return false;
+                }
+
+                const correct = countExactMatches(computerSecret, raw);
+                humanGuesses.push({ guess: raw, correct, round: humanGuesses.length + 1 });
+                renderHumanHistory();
+                humanGuessInput.value = '';
+                humanGuessInput.focus();
+
+                if (correct === 4) {
+                    endGame('human');
+                    renderHumanHistory();
+                    renderAIHistory();
+                    return true;
+                }
+
+                // 触发电脑猜一次
+                if (!aiGameFinished && !gameOverallWinner && humanSecret) {
+                    performAIGuess();
+                }
+                return true;
+            }
+
+            // ---------- 电脑执行猜测 ----------
+            function performAIGuess() {
+                if (!humanSecret || aiGameFinished || gameOverallWinner) return false;
+
+                if (aiPossibleCodes.length === 0) {
+                    initAICandidates();
+                }
+
+                let guess = pickNextGuess();
+                if (!guess) return false;
+
+                let attempts = 0;
+                while (aiGuesses.some(g => g.guess === guess) && attempts < 10) {
+                    const idx = aiPossibleCodes.indexOf(guess);
+                    if (idx !== -1 && aiPossibleCodes.length > 1) {
+                        aiPossibleCodes.splice(idx, 1);
+                    }
+                    guess = pickNextGuess();
+                    attempts++;
+                    if (!guess) return false;
+                }
+
+                const correct = countExactMatches(humanSecret, guess);
+                aiGuesses.push({ guess, correct, round: aiGuesses.length + 1 });
+                renderAIHistory();
+
+                filterCandidates(guess, correct);
+
+                if (correct === 4) {
+                    endGame('ai');
+                    renderAIHistory();
+                    renderHumanHistory();
+                    return true;
+                }
+                return true;
+            }
+
+            // ---------- 渲染函数 ----------
+            function renderHumanHistory() {
+                if (humanGuesses.length === 0) {
+                    humanHistoryList.innerHTML = `<div style="color: #79b5c2; text-align: center; padding: 30px;">✨ 等待你的第一次猜测</div>`;
+                    humanRoundDisplay.textContent = `第 0 轮`;
+                    return;
+                }
+                let html = '';
+                humanGuesses.forEach(item => {
+                    html += `
+                        <div class="guess-item">
+                            <span class="round-tag">#${item.round}</span>
+                            <span class="guess-value">${item.guess}</span>
+                            <span class="correct-count">✅ ${item.correct}</span>
+                        </div>
+                    `;
+                });
+                humanHistoryList.innerHTML = html;
+                humanHistoryList.scrollTop = humanHistoryList.scrollHeight;
+                humanRoundDisplay.textContent = `第 ${humanGuesses.length} 轮`;
+            }
+
+            function renderAIHistory() {
+                if (aiGuesses.length === 0) {
+                    aiHistoryList.innerHTML = `<div style="color: #6f9fab; text-align: center; padding: 20px;">🤖 等待电脑猜测</div>`;
+                    aiRoundDisplay.textContent = `第 0 轮`;
+                    return;
+                }
+                let html = '';
+                aiGuesses.forEach(item => {
+                    html += `
+                        <div class="guess-item">
+                            <span class="round-tag">#${item.round}</span>
+                            <span class="guess-value">${item.guess}</span>
+                            <span class="correct-count">✅ ${item.correct}</span>
+                        </div>
+                    `;
+                });
+                aiHistoryList.innerHTML = html;
+                aiHistoryList.scrollTop = aiHistoryList.scrollHeight;
+                aiRoundDisplay.textContent = `第 ${aiGuesses.length} 轮`;
+            }
+
+            // ---------- 重置游戏：直接进入设密界面 ----------
+            function fullResetToSetup() {
+                // 重置所有状态
+                computerSecret = generateRandomSecret();
+                humanGuesses = [];
+                humanGameFinished = false;
+                humanSecret = null;
+                aiGuesses = [];
+                aiGameFinished = false;
+                aiPossibleCodes = [];
+                gameOverallWinner = null;
+                
+                // 清空所有输入
+                humanGuessInput.value = '';
+                secretSetupInput.value = '';
+                
+                // 重置UI
+                computerSecretMask.textContent = '????';
+                humanSecretMask.textContent = '????';
+                humanWinMessage.style.display = 'none';
+                aiWinMessage.style.display = 'none';
+                
+                renderHumanHistory();
+                renderAIHistory();
+                
+                // 直接显示设密界面
+                showSetupScreen();
+            }
+
+            // ---------- 启动PK ----------
+            function startPKWithSecret(secret) {
+                // 设定人类密码 - 显示在电脑区域顶部
+                humanSecret = secret;
+                humanSecretMask.textContent = humanSecret;
+                humanSecretMask.style.color = '#ffe88e';
+                secretHint.innerHTML = '⚙️ 同步猜数中';
+                
+                // 重置右侧AI状态
+                aiGuesses = [];
+                aiGameFinished = false;
+                aiPossibleCodes = [];
+                aiWinMessage.style.display = 'none';
+                renderAIHistory();
+                
+                // 重置左侧（生成新电脑密码）
+                computerSecret = generateRandomSecret();
+                humanGuesses = [];
+                humanGameFinished = false;
+                humanGuessBtn.disabled = false;
+                humanGuessInput.disabled = false;
+                humanGuessInput.value = '';
+                computerSecretMask.textContent = '????';
+                humanWinMessage.style.display = 'none';
+                renderHumanHistory();
+                
+                gameOverallWinner = null;
+                
+                // 显示主PK界面
+                showPKScreen();
+            }
+
+            // ---------- 事件绑定 ----------
+            function init() {
+                showStartScreen();
+                
+                startBtn.onclick = (e) => {
+                    e.preventDefault();
+                    showSetupScreen();
+                };
+                
+                secretSetupInput.onkeydown = (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        let raw = secretSetupInput.value.trim().replace(/\D/g, '');
+                        if (raw.length !== 4) {
+                            alert('请输入恰好四位数字作为电脑猜题目标');
+                            return;
+                        }
+                        startPKWithSecret(raw);
+                    }
+                };
+                
+                secretSetupInput.oninput = function() {
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                };
+                
+                humanGuessBtn.onclick = (e) => { e.preventDefault(); submitHumanGuess(); };
+                humanGuessInput.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); submitHumanGuess(); } };
+                humanGuessInput.oninput = function() { this.value = this.value.replace(/[^0-9]/g, ''); };
+                
+                restartBtn.onclick = (e) => {
+                    e.preventDefault();
+                    fullResetToSetup();
+                };
+            }
+
+            init();
+        })();
+    </script>
+</body>
+</html>
