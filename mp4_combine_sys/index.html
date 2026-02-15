@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>下载 BAT 工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(145deg, #2b3a67 0%, #3b4d8c 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 40px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #1e2b4f;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        
+        .file-name {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1e2b4f;
+            background: #f0f4fc;
+            padding: 15px;
+            border-radius: 30px;
+            margin-bottom: 25px;
+            border: 2px solid #cbd5e1;
+            word-break: break-all;
+        }
+        
+        .download-btn {
+            background: #22c55e;
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 60px;
+            font-size: 24px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            margin: 10px 0;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .download-btn:hover {
+            background: #16a34a;
+        }
+        
+        .download-btn:active {
+            transform: scale(0.98);
+        }
+        
+        .file-size {
+            color: #475569;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        
+        .status.success {
+            margin-top: 15px;
+            padding: 12px;
+            background: #dcfce7;
+            color: #166534;
+            border-radius: 30px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>⚡ BAT 下载器</h1>
+        
+        <div class="file-name">
+            mp4音频视频合并工具.bat
+        </div>
+        
+        <button class="download-btn" id="downloadBtn">
+            <span>⬇️</span> 下载文件
+        </button>
+        
+        <div class="file-size" id="fileSize">
+            检查文件中...
+        </div>
+        
+        <div id="successMessage" class="status success" style="display: none;">
+            ✅ 下载成功！
+        </div>
+    </div>
+
+    <script>
+        const TARGET_FILE = "mp4音频视频合并工具.bat";
+        
+        const downloadBtn = document.getElementById('downloadBtn');
+        const fileSizeSpan = document.getElementById('fileSize');
+        const successMessage = document.getElementById('successMessage');
+        
+        // 检查文件是否存在
+        async function checkFile() {
+            try {
+                const response = await fetch(TARGET_FILE, { method: 'HEAD' });
+                if (response.ok) {
+                    const size = response.headers.get('content-length');
+                    if (size) {
+                        const sizeInKB = (parseInt(size) / 1024).toFixed(2);
+                        fileSizeSpan.textContent = `📁 文件存在 (${sizeInKB} KB)`;
+                    } else {
+                        fileSizeSpan.textContent = `📁 文件存在`;
+                    }
+                } else {
+                    fileSizeSpan.textContent = `❌ 文件不存在`;
+                }
+            } catch (error) {
+                fileSizeSpan.textContent = `❌ 无法访问文件`;
+            }
+        }
+        
+        // 下载文件
+        function downloadFile() {
+            try {
+                const link = document.createElement('a');
+                link.download = TARGET_FILE;
+                link.href = TARGET_FILE;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // 显示成功消息
+                successMessage.style.display = 'block';
+                setTimeout(() => {
+                    successMessage.style.display = 'none';
+                }, 2000);
+                
+                // 重新检查文件状态
+                setTimeout(checkFile, 500);
+                
+            } catch (error) {
+                alert('下载失败：' + error.message);
+            }
+        }
+        
+        // 事件监听
+        downloadBtn.addEventListener('click', downloadFile);
+        
+        // 页面加载时检查文件
+        checkFile();
+    </script>
+</body>
+</html>
