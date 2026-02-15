@@ -27,7 +27,7 @@
             border-radius: 40px;
             box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
             width: 100%;
-            max-width: 500px;
+            max-width: 1200px;
             padding: 40px;
             text-align: center;
         }
@@ -98,7 +98,7 @@
         <h1>⚡ BAT 下载器</h1>
         
         <div class="file-name">
-            mp4音频视频合并工具.bat
+            ffmpeg -i "音频.mp4" -i "视频.mp4" -c:v copy -c:a aac -map 0:v:0 -map 1:a:0 -shortest "合并视频.mp4"
         </div>
         
         <button class="download-btn" id="downloadBtn">
