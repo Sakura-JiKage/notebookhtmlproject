@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>强健体魄·四年自然进化 | 固定计时器 + 阶段目标</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: #eef5f9;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        /* 主布局：左侧内容区 + 右侧固定计时器面板 */
+        .master-layout {
+            display: flex;
+            width: 100%;
+            max-width: 1600px;
+            position: relative;
+        }
+
+        /* 左侧滚动内容区 */
+        .content-scroll {
+            flex: 1;
+            padding: 2rem 2rem 4rem 2rem;
+            overflow-y: auto;
+            height: 100vh;
+            scroll-behavior: smooth;
+        }
+
+        /* 右侧固定计时器面板 (始终可见) */
+        .timer-panel-fixed {
+            width: 340px;
+            background: linear-gradient(165deg, #ffffff 0%, #f4fcff 100%);
+            border-left: 2px solid #c9e3f0;
+            box-shadow: -10px 0 25px -15px #386f8b;
+            padding: 2rem 1.5rem;
+            height: 100vh;
+            position: sticky;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1.8rem;
+        }
+
+        .timer-header {
+            text-align: center;
+        }
+
+        .timer-header h3 {
+            font-size: 1.8rem;
+            color: #104f68;
+            font-weight: 650;
+            margin-bottom: 0.5rem;
+        }
+
+        .big-countdown {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 4.2rem;
+            font-weight: 700;
+            background: #0e3f54;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            text-align: center;
+            letter-spacing: 5px;
+            box-shadow: inset 0 -5px 0 #052935, 0 15px 25px -12px #11556e;
+            margin-bottom: 1rem;
+        }
+
+        .time-picker-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #e8f3fa;
+            border-radius: 60px;
+            padding: 0.3rem 0.3rem 0.3rem 1.2rem;
+        }
+
+        .input-row label {
+            font-weight: 600;
+            color: #0c4c64;
+        }
+
+        .input-row input {
+            width: 100px;
+            font-size: 1.6rem;
+            font-weight: 600;
+            text-align: center;
+            border: none;
+            background: white;
+            border-radius: 50px;
+            padding: 0.4rem 0;
+            color: #064256;
+            border: 1px solid #b6dbf0;
+        }
+
+        .select-row {
+            background: #e8f3fa;
+            border-radius: 60px;
+            padding: 0.3rem 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .select-row select {
+            font-size: 1.2rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 40px;
+            border: 1px solid #a2cde7;
+            background: white;
+            color: #023d52;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.8rem;
+        }
+
+        .timer-action-btn {
+            flex: 1 1 auto;
+            background: #d3ecfb;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            padding: 0.8rem 0;
+            border-radius: 50px;
+            color: #01384b;
+            cursor: pointer;
+            border: 1px solid #9ec9e5;
+            transition: 0.1s;
+        }
+
+        .timer-action-btn:hover {
+            background: #b9def5;
+        }
+
+        .reset-btn {
+            background: #fee5d0;
+            color: #744f23;
+            border-color: #e7b78b;
+        }
+
+        .phase-goal-reminder {
+            background: #dff2fa;
+            border-radius: 30px;
+            padding: 1.2rem;
+            margin-top: 0.8rem;
+            border-left: 6px solid #56b3d4;
+        }
+
+        .phase-goal-reminder p {
+            font-weight: 500;
+            color: #0d4c63;
+        }
+
+        /* 装饰文字 */
+        .quote {
+            font-size: 0.95rem;
+            color: #35748d;
+            background: #f3faff;
+            border-radius: 40px;
+            padding: 0.5rem 1rem;
+            text-align: center;
+        }
+
+        /* 头部 */
+        .page-title {
+            margin-bottom: 2.5rem;
+        }
+
+        .page-title h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: #0a4155;
+        }
+
+        .page-title p {
+            font-size: 1.2rem;
+            color: #266983;
+        }
+
+        /* 阶段卡片 */
+        .phase-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            border-radius: 48px;
+            padding: 2rem 2rem 2rem 2rem;
+            margin-bottom: 2.8rem;
+            box-shadow: 0 20px 35px -15px #2f6f8a;
+            border: 1px solid #ffffffc0;
+        }
+
+        .phase-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .phase-name {
+            font-size: 2.3rem;
+            font-weight: 700;
+            color: #0d455b;
+        }
+
+        .phase-duration {
+            font-size: 1.2rem;
+            background: #2e7f9c;
+            color: white;
+            padding: 0.2rem 1.2rem;
+            border-radius: 40px;
+            font-weight: 600;
+        }
+
+        .phase-target {
+            background: #faeac7;
+            border-radius: 30px;
+            padding: 0.8rem 1.5rem;
+            margin: 1.2rem 0 1.5rem 0;
+            border-left: 7px solid #f3b33d;
+            font-weight: 500;
+        }
+
+        .phase-target span {
+            font-weight: 700;
+            color: #954f0b;
+        }
+
+        .week-badge {
+            background: #c1e2f3;
+            padding: 0.3rem 1.8rem;
+            border-radius: 40px;
+            display: inline-block;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            color: #003f58;
+        }
+
+        .block-title {
+            font-size: 1.7rem;
+            font-weight: 650;
+            margin: 1.8rem 0 1rem 0;
+            color: #0f5069;
+        }
+
+        /* 动作列表顺序排列 */
+        .exercise-list-vertical {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .exercise-row-card {
+            background: white;
+            border-radius: 30px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            box-shadow: 0 5px 14px #c7ddec;
+            border: 1px solid #d3e7f2;
+        }
+
+        /* 示意图占位 (统一使用Emoji/简单图形示意，符合无图库要求) */
+        .exercise-img-placeholder {
+            font-size: 3rem;
+            min-width: 70px;
+            text-align: center;
+            background: #e3f1f9;
+            border-radius: 40px;
+            padding: 0.4rem;
+        }
+
+        .exercise-details {
+            flex: 2;
+        }
+
+        .exercise-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #103f53;
+        }
+
+        .instruction {
+            font-size: 0.95rem;
+            color: #1b5d79;
+            background: #e9f5fd;
+            border-radius: 30px;
+            padding: 0.2rem 1rem;
+            display: inline-block;
+            margin-top: 0.2rem;
+        }
+
+        /* 右侧空白占位，因为计时器已经固定，无需在卡片内加按钮 */
+        .exercise-spacer {
+            min-width: 80px;
+            text-align: right;
+            color: #32809b;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .finish-icon {
+            font-size: 1.6rem;
+            opacity: 0.5;
+        }
+
+        .footer-note {
+            text-align: center;
+            color: #266985;
+            margin-top: 2rem;
+            padding: 1rem;
+        }
+
+        /* 移动端适配: 固定面板变底部 */
+        @media (max-width: 900px) {
+            .master-layout {
+                flex-direction: column;
+            }
+            .timer-panel-fixed {
+                width: 100%;
+                height: auto;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                top: auto;
+                border-left: none;
+                border-top: 2px solid #cde3f0;
+                box-shadow: 0 -5px 20px #b3d0e0;
+                z-index: 100;
+                padding: 1rem 1.5rem;
+                background: white;
+            }
+            .content-scroll {
+                height: auto;
+                padding-bottom: 280px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="master-layout">
+    <!-- 左侧滚动内容区：所有动作按顺序垂直排列，带示意图占位 -->
+    <div class="content-scroll">
+        <div class="page-title">
+            <h1>🏔️ 强健体魄 · 四年自然之旅</h1>
+            <p>不追求巨大肌肉，只求活力、耐力、坚实 — 每个阶段都有明确毕业目标</p>
+        </div>
+
+        <!-- 阶段 1 适应奠基 1-3月 -->
+        <div class="phase-card" id="phase1">
+            <div class="phase-header">
+                <span class="phase-name">🌱 适应奠基</span>
+                <span class="phase-duration">第1–3月</span>
+            </div>
+            <div class="phase-target">
+                <span>🎯 阶段完成目标：</span>能完全标准完成所有动作，无关节不适；靠墙静蹲轻松保持60秒；平板支撑超过45秒；对动作模式有深刻肌肉记忆。
+            </div>
+            <div class="week-badge">每周5–6天 · 每次20–25分钟</div>
+
+            <!-- 热身区 -->
+            <div class="block-title">🔥 动态热身</div>
+            <div class="exercise-list-vertical">
+                <!-- 动作按顺序 -->
+                <div class="exercise-row-card">
+                    <div class="exercise-img-placeholder">🧘</div>
+                    <div class="exercise-details"><span class="exercise-name">颈肩环绕</span><div class="instruction">左右各30秒 — 缓慢画圆</div></div>
+                    <div class="exercise-spacer">⏱️ 用右侧计时器</div>
+                </div>
+                <div class="exercise-row-card">
+                    <div class="exercise-img-placeholder">🔄</div>
+                    <div class="exercise-details"><span class="exercise-name">手臂划圈</span><div class="instruction">向前30秒 + 向后30秒 — 肩放松</div></div>
+                    <div class="exercise-spacer">⏱️ 用右侧计时器</div>
+                </div>
+                <div class="exercise-row-card">
+                    <div class="exercise-img-placeholder">🦵</div>
+                    <div class="exercise-details"><span class="exercise-name">徒手深蹲</span><div class="instruction">15个慢速 — 像坐椅子</div></div>
+                    <div class="exercise-spacer">🔁 计数</div>
+                </div>
+                <div class="exercise-row-card">
+                    <div class="exercise-img-placeholder">🦶</div>
+                    <div class="exercise-details"><span class="exercise-name">原地提踵</span><div class="instruction">20个 — 踮脚顶峰停留</div></div>
+                    <div class="exercise-spacer">🔁 计数</div>
+                </div>
+            </div>
+
+            <div class="block-title">💪 基础力量</div>
+            <div class="exercise-list-vertical">
+                <div class="exercise-row-card"><div class="exercise-img-placeholder">🧱</div><div class="exercise-details"><span class="exercise-name">靠墙静蹲</span><div class="instruction">保持45秒 (可逐步延长)</div></div><div class="exercise-spacer">⏱️ 右侧计时</div></div>
+                <div class="exercise-row-card"><div class="exercise-img-placeholder">🙇</div><div class="exercise-details"><span class="exercise-name">跪姿俯卧撑</span><div class="instruction">5–10个 核心收紧</div></div><div class="exercise-spacer">🔁 计数</div></div>
+                <div class="exercise-row-card"><div class="exercise-img-placeholder">🍑</div><div class="exercise-details"><span class="exercise-name">臀桥</span><div class="instruction">15–20次 顶峰夹紧</div></div><div class="exercise-spacer">🔁 计数</div></div>
+                <div class="exercise-row-card"><div class="exercise-img-placeholder">📏</div><div class="exercise-details"><span class="exercise-name">平板支撑</span><div class="instruction">保持30秒 身体直线</div></div><div class="exercise-spacer">⏱️ 右侧计时</div></div>
+                <div class="exercise-row-card"><div class="exercise-img-placeholder">🪲</div><div class="exercise-details"><span class="exercise-name">死虫式</span><div class="instruction">10–15次 腰部贴地</div></div><div class="exercise-spacer">🔁 计数</div></div>
+            </div>
+
+            <div class="block-title">🧘 整理拉伸</div>
+            <div class="exercise-list-vertical">
+                <div class="exercise-row-card"><div class="exercise-img-placeholder">🦵</div><div class="exercise-details"><span class="exercise-name">大腿前侧拉伸</span><div class="instruction">左右各30秒 手拉脚踝</div></div><div class="exercise-spacer">⏱️ 右侧计时</div></div>
+                <div class="exercise-row-card"><div class="exercise-img-placeholder">🐱</div><div class="exercise-details"><span class="exercise-name">猫牛式</span><div class="instruction">弓背/塌腰各30秒</div></div><div class="exercise-spacer">⏱️ 右侧计时</div></div>
+                <div class="exercise-row-card"><div class="exercise-img-placeholder">👶</div><div class="exercise-details"><span class="exercise-name">婴儿式</span><div class="instruction">左右侧各30秒</div></div><div class="exercise-spacer">⏱️ 右侧计时</div></div>
+            </div>
+        </div>
+
+        <!-- 阶段 2 巩固提升 4-9月 -->
+        <div class="phase-card" id="phase2">
+            <div class="phase-header"><span class="phase-name">🌿 巩固肌力</span><span class="phase-duration">第4–9月</span></div>
+            <div class="phase-target"><span>🎯 阶段完成目标：</span>标准俯卧撑可以完成15个，箭步蹲轻松每侧15次，平板支撑轻松70秒，仰卧抬腿无腰部代偿。感觉日常体力明显提升。</div>
+            <div class="week-badge">每周4次力量+2次恢复</div>
+            <div class="exercise-list-vertical">
+                <div class="exercise-row-card"><div class="exercise-img-placeholder">🏋️</div><div class="exercise-details"><span class="exercise-name">标准深蹲</span><div class="instruction">15个x3组 膝盖稳定</div></div><div class="exercise-spacer">🔁 计数</div></div>
+                <div class="exercise-row-card"><div class="exercise-img-placeholder">💪</div><div class="exercise-details"><span class="exercise-name">标准俯卧撑</span><div class="instruction">5-10个x3组 身体直线</div></div><div class="exercise-spacer">🔁 计数</div></div>
+                <div class="exercise-row-card"><div class="exercise-img-placeholder">🪑</div><div class="exercise-details"><span class="exercise-name">反向划船(桌)</span><div class="instruction">8-12次x3组</div></div><div class="exercise-spacer">🔁 计数</div></div>
+                <div class="exercise-row-card"><div class="exercise-img-placeholder">🚶</div><div class="exercise-details"><span class="exercise-name">箭步蹲</span><div class="instruction">左右各10次x3组</div></div><div class="exercise-spacer">🔁 计数</div></div>
+                <div class="exercise-row-card"><div class="exercise-img-placeholder">🦵</div><div class="exercise-details"><span class="exercise-name">仰卧抬腿</span><div class="instruction">15次x3组</div></div><div class="exercise-spacer">🔁 计数</div></div>
+                <div class="exercise-row-card"><div class="exercise-img-placeholder">⏱️</div><div class="exercise-details"><span class="exercise-name">靠墙静蹲进阶</span><div class="instruction">保持60秒</div></div><div class="exercise-spacer">⏱️ 右侧计时</div></div>
+                <div class="exercise-row-card"><div class="exercise-img-placeholder">📈</div><div class="exercise-details"><span class="exercise-name">平板支撑进阶</span><div class="instruction">保持45秒 可抬腿</div></div><div class="exercise-spacer">⏱️ 右侧计时</div></div>
+            </div>
+            <div class="block-title">主动拉伸</div>
+            <div class="exercise-list-vertical">
+                <div class="exercise-row-card"><div class="exercise-img-placeholder">🦵</div><div class="exercise-details"><span class="exercise-name">大腿前侧拉伸</span><div class="instruction">左右各30秒</div></div><div class="exercise-spacer">⏱️ 右侧计时</div></div>
+                <div class="exercise-row-card"><div class="exercise-img-placeholder">🦋</div><div class="exercise-details"><span class="exercise-name">蝴蝶式</span><div class="instruction">保持45秒</div></div><div class="exercise-spacer">⏱️ 右侧计时</div></div>
+            </div>
+        </div>
+
+        <!-- 阶段 3 力量进阶 (第2年) -->
+        <div class="phase-card" id="phase3">
+            <div class="phase-header"><span class="phase-name">💪 力量进阶</span><span class="phase-duration">第2年</span></div>
+            <div class="phase-target"><span>🎯 阶段完成目标：</span>可以控制单腿臀桥，倒立靠墙静蹲30秒无压力，爆发俯卧撑初显，整体线条紧致，精力充沛。</div>
+            <div class="week-badge">每周4-5次，45-50分钟</div>
+            <div class="exercise-list-vertical">
+                <div class="exercise-row-card"><div class="exercise-img-placeholder">🏋️</div><div class="exercise-details"><span class="exercise-name">深度深蹲(窄/宽)</span><div class="instruction">20个x4组</div></div><div class="exercise-spacer">🔁 计数</div></div>
+                <div class="exercise-row-card"><div class="exercise-img-placeholder">📐</div><div class="exercise-details"><span class="exercise-name">俯卧撑宽距/赤字</span><div class="instruction">12-15x4组</div></div><div class="exercise-spacer">🔁 计数</div></div>
+                <div class="exercise-row-card"><div class="exercise-img-placeholder">🦵</div><div class="exercise-details"><span class="exercise-name">单腿臀桥</span><div class="instruction">每侧12次x3组</div></div><div class="exercise-spacer">🔁 计数</div></div>
+                <div class="exercise-row-card"><div class="exercise-img-placeholder">🙃</div><div class="exercise-details"><span class="exercise-name">倒立靠墙静蹲(肩)</span><div class="instruction">保持30秒</div></div><div class="exercise-spacer">⏱️ 右侧计时</div></div>
+                <div class="exercise-row-card"><div class="exercise-img-placeholder">🧱</div><div class="exercise-details"><span class="exercise-name">平板支撑负重感</span><div class="instruction">保持75秒</div></div><div class="exercise-spacer">⏱️ 右侧计时</div></div>
+            </div>
+        </div>
+
+        <!-- 阶段 4 精英雕琢 (第3-4年) -->
+        <div class="phase-card" id="phase4">
+            <div class="phase-header"><span class="phase-name">🏹 精英 · 强健体魄</span><span class="phase-duration">第3–4年</span></div>
+            <div class="phase-target"><span>🎯 阶段完成目标：</span>轻松完成单腿深蹲辅助，爆发俯卧撑，L-sit保持25秒以上，感觉自己敏捷、坚实、充满运动能力。</div>
+            <div class="week-badge">每周5次，60分钟左右</div>
+            <div class="exercise-list-vertical">
+                <div class="exercise-row-card"><div class="exercise-img-placeholder">🔫</div><div class="exercise-details"><span class="exercise-name">单腿深蹲(手枪辅助)</span><div class="instruction">每侧8次x4组</div></div><div class="exercise-spacer">🔁 计数</div></div>
+                <div class="exercise-row-card"><div class="exercise-img-placeholder">💥</div><div class="exercise-details"><span class="exercise-name">爆发力俯卧撑</span><div class="instruction">10x5组 离地拍手</div></div><div class="exercise-spacer">🔁 计数</div></div>
+                <div class="exercise-row-card"><div class="exercise-img-placeholder">📐</div><div class="exercise-details"><span class="exercise-name">L-sit 保持</span><div class="instruction">20秒x4组</div></div><div class="exercise-spacer">⏱️ 右侧计时</div></div>
+                <div class="exercise-row-card"><div class="exercise-img-placeholder">↔️</div><div class="exercise-details"><span class="exercise-name">侧支撑</span><div class="instruction">左右各45秒</div></div><div class="exercise-spacer">⏱️ 右侧计时</div></div>
+                <div class="exercise-row-card"><div class="exercise-img-placeholder">🌉</div><div class="exercise-details"><span class="exercise-name">桥式滚动</span><div class="instruction">8次x3组</div></div><div class="exercise-spacer">🔁 计数</div></div>
+            </div>
+        </div>
+
+        <div class="footer-note">
+            ⏱️ 右侧计时器始终可见。计数动作自行记录，计时动作使用右侧设定时长。<br>
+            🌟 强健体魄的关键：持续、平衡、倾听身体。
+        </div>
+    </div>
+
+    <!-- 右侧固定计时器面板 (始终可见，滚动时固定) -->
+    <div class="timer-panel-fixed">
+        <div class="timer-header">
+            <h3>⏳ 全局计时器</h3>
+            <div class="big-countdown" id="globalCountdown">30</div>
+        </div>
+
+        <div class="time-picker-group">
+            <div class="input-row">
+                <label>秒数</label>
+                <input type="number" id="customSeconds" value="30" min="1" max="999" step="1">
+            </div>
+            <div class="select-row">
+                <span>快捷选择</span>
+                <select id="quickSelect">
+                    <option value="10">10秒</option><option value="15">15秒</option><option value="30" selected>30秒</option>
+                    <option value="45">45秒</option><option value="60">60秒</option><option value="90">90秒</option>
+                    <option value="120">2分</option><option value="180">3分</option><option value="300">5分</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="timer-action-btn" id="startTimerBtn">▶ 开始</button>
+            <button class="timer-action-btn" id="pauseTimerBtn">⏸️ 暂停</button>
+            <button class="timer-action-btn reset-btn" id="resetTimerBtn">↺ 重置</button>
+        </div>
+
+        <div class="phase-goal-reminder">
+            <p>✨ 当前阶段目标提醒</p>
+            <ul style="margin-left:1.2rem; color:#13586f;">
+                <li>🌱 适应: 静蹲60″ / 平板45″</li>
+                <li>🌿 巩固: 标准俯卧撑15个</li>
+                <li>💪 进阶: 单腿臀桥稳定</li>
+                <li>🏹 精英: L-sit 20秒+</li>
+            </ul>
+        </div>
+
+        <div class="quote">
+            “强壮是能量，不是体积”<br> — 完成阶段目标再进阶
+        </div>
+    </div>
+</div>
+
+<!-- 计时器脚本 (与之前类似，但更简洁) -->
+<script>
+    (function() {
+        const countdownEl = document.getElementById('globalCountdown');
+        const customInput = document.getElementById('customSeconds');
+        const quickSelect = document.getElementById('quickSelect');
+        const startBtn = document.getElementById('startTimerBtn');
+        const pauseBtn = document.getElementById('pauseTimerBtn');
+        const resetBtn = document.getElementById('resetTimerBtn');
+
+        let currentSeconds = 30;
+        let intervalId = null;
+        let isPaused = false;
+
+        function updateDisplay() {
+            countdownEl.innerText = currentSeconds;
+        }
+
+        function stopTimer() {
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+        }
+
+        function syncFromInput() {
+            let val = parseInt(customInput.value, 10);
+            if (isNaN(val) || val < 1) val = 1;
+            if (val > 999) val = 999;
+            customInput.value = val;
+            currentSeconds = val;
+            updateDisplay();
+        }
+
+        quickSelect.addEventListener('change', function() {
+            const sec = parseInt(quickSelect.value, 10);
+            customInput.value = sec;
+            syncFromInput();
+        });
+
+        customInput.addEventListener('input', function() {
+            syncFromInput(); 
+        });
+
+        startBtn.addEventListener('click', function() {
+            stopTimer();
+            syncFromInput();
+            if (currentSeconds <= 0) currentSeconds = 1;
+            updateDisplay();
+            intervalId = setInterval(() => {
+                if (currentSeconds > 0) {
+                    currentSeconds -= 1;
+                    updateDisplay();
+                }
+                if (currentSeconds <= 0) {
+                    stopTimer();
+                }
+            }, 1000);
+            isPaused = false;
+        });
+
+        pauseBtn.addEventListener('click', function() {
+            if (intervalId) {
+                stopTimer();
+                isPaused = true;
+            }
+        });
+
+        resetBtn.addEventListener('click', function() {
+            stopTimer();
+            syncFromInput();
+            isPaused = false;
+        });
+
+        syncFromInput(); // 初始显示
+    })();
+</script>
+<!-- 确保数字输入友好 -->
+<style>
+    input[type=number]::-webkit-inner-spin-button { opacity:0.6; }
+    .exercise-img-placeholder { filter: drop-shadow(2px 4px 4px rgba(0,0,0,0.1)); }
+</style>
+</body>
+</html>
