@@ -98,7 +98,8 @@
         <h1>⚡ BAT 下载器</h1>
         
         <div class="file-name">
-            ffmpeg -i "音频.mp4" -i "视频.mp4" -c:v copy -c:a aac -map 0:v:0 -map 1:a:0 -shortest "合并视频.mp4"
+            ffmpeg -i "音频.mp4" -i "视频.mp4" -c:v copy -c:a aac -map 0:v:0 -map 1:a:0 -shortest "合并视频.mp4"<br>
+            ffmpeg -i "音频.m4s" -i "视频.m4s" -c copy "合并视频.mp4"
         </div>
         
         <button class="download-btn" id="downloadBtn">
