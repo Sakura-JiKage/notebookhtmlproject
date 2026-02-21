@@ -1,0 +1,621 @@
+{
+  "teams": [
+    {
+      "id": 1,
+      "name": "1队",
+      "color": "#dc3545",
+      "members": [
+        {
+          "id": 17,
+          "name": "Ning",
+          "position": "中单",
+          "level": "筑基",
+          "identity": "队员"
+        },
+        {
+          "id": 34,
+          "name": "Pyl",
+          "position": "辅助",
+          "level": "元婴",
+          "identity": "队长"
+        },
+        {
+          "id": 2,
+          "name": "米勒",
+          "position": "上单",
+          "level": "筑基",
+          "identity": "队员"
+        },
+        {
+          "id": 27,
+          "name": "Mage",
+          "position": "射手",
+          "level": "筑基",
+          "identity": "队员"
+        },
+        {
+          "id": 10,
+          "name": "友浩",
+          "position": "打野",
+          "level": "筑基",
+          "identity": "队员"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "2队",
+      "color": "#0d6efd",
+      "members": [
+        {
+          "id": 13,
+          "name": "Fireloli",
+          "position": "打野",
+          "level": "元婴",
+          "identity": "队长"
+        },
+        {
+          "id": 16,
+          "name": "王淞",
+          "position": "中单",
+          "level": "筑基",
+          "identity": "队员"
+        },
+        {
+          "id": 5,
+          "name": "祥麟",
+          "position": "上单",
+          "level": "筑基",
+          "identity": "队员"
+        },
+        {
+          "id": 30,
+          "name": "周敢敢",
+          "position": "辅助",
+          "level": "筑基",
+          "identity": "队员"
+        },
+        {
+          "id": 25,
+          "name": "怀南",
+          "position": "射手",
+          "level": "筑基",
+          "identity": "队员"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "3队",
+      "color": "#198754",
+      "members": [
+        {
+          "id": 6,
+          "name": "Langx",
+          "position": "上单",
+          "level": "元婴",
+          "identity": "队长"
+        },
+        {
+          "id": 15,
+          "name": "乘风儿",
+          "position": "中单",
+          "level": "筑基",
+          "identity": "队员"
+        },
+        {
+          "id": 11,
+          "name": "张硕",
+          "position": "打野",
+          "level": "筑基",
+          "identity": "队员"
+        },
+        {
+          "id": 28,
+          "name": "雨凡",
+          "position": "射手",
+          "level": "筑基",
+          "identity": "队员"
+        },
+        {
+          "id": 31,
+          "name": "阿芙",
+          "position": "辅助",
+          "level": "筑基",
+          "identity": "队员"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "4队",
+      "color": "#fd7e14",
+      "members": [
+        {
+          "id": 7,
+          "name": "957",
+          "position": "上单",
+          "level": "元婴",
+          "identity": "队长"
+        },
+        {
+          "id": 22,
+          "name": "宝蓝",
+          "position": "射手",
+          "level": "筑基",
+          "identity": "队员"
+        },
+        {
+          "id": 9,
+          "name": "管泽元",
+          "position": "打野",
+          "level": "筑基",
+          "identity": "队员"
+        },
+        {
+          "id": 29,
+          "name": "十月",
+          "position": "辅助",
+          "level": "筑基",
+          "identity": "队员"
+        },
+        {
+          "id": 20,
+          "name": "Doby",
+          "position": "中单",
+          "level": "筑基",
+          "identity": "队员"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "5队",
+      "color": "#6f42c1",
+      "members": [
+        {
+          "id": 21,
+          "name": "Xiye",
+          "position": "中单",
+          "level": "元婴",
+          "identity": "队长"
+        },
+        {
+          "id": 33,
+          "name": "Cryin",
+          "position": "辅助",
+          "level": "筑基",
+          "identity": "队员"
+        },
+        {
+          "id": 12,
+          "name": "乐乐",
+          "position": "打野",
+          "level": "筑基",
+          "identity": "队员"
+        },
+        {
+          "id": 4,
+          "name": "宸宇",
+          "position": "上单",
+          "level": "筑基",
+          "identity": "队员"
+        },
+        {
+          "id": 26,
+          "name": "瞳夕",
+          "position": "射手",
+          "level": "筑基",
+          "identity": "队员"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "6队",
+      "color": "#20c997",
+      "members": [
+        {
+          "id": 14,
+          "name": "Hacker",
+          "position": "打野",
+          "level": "元婴",
+          "identity": "队长"
+        },
+        {
+          "id": 18,
+          "name": "小伞",
+          "position": "中单",
+          "level": "筑基",
+          "identity": "队员"
+        },
+        {
+          "id": 32,
+          "name": "Kinko",
+          "position": "辅助",
+          "level": "筑基",
+          "identity": "队员"
+        },
+        {
+          "id": 3,
+          "name": "呆呆",
+          "position": "上单",
+          "level": "筑基",
+          "identity": "队员"
+        },
+        {
+          "id": 24,
+          "name": "Suki",
+          "position": "射手",
+          "level": "筑基",
+          "identity": "队员"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "7队",
+      "color": "#e83e8c",
+      "members": [
+        {
+          "id": 35,
+          "name": "Doinb",
+          "position": "辅助",
+          "level": "元婴",
+          "identity": "队长"
+        },
+        {
+          "id": 23,
+          "name": "毛毛",
+          "position": "射手",
+          "level": "筑基",
+          "identity": "队员"
+        },
+        {
+          "id": 19,
+          "name": "Zonic",
+          "position": "中单",
+          "level": "筑基",
+          "identity": "队员"
+        },
+        {
+          "id": 1,
+          "name": "小捏",
+          "position": "上单",
+          "level": "筑基",
+          "identity": "队员"
+        },
+        {
+          "id": 8,
+          "name": "赵俊日",
+          "position": "打野",
+          "level": "筑基",
+          "identity": "队员"
+        }
+      ]
+    }
+  ],
+  "playersByPosition": {
+    "上单": [],
+    "打野": [],
+    "中单": [],
+    "射手": [],
+    "辅助": []
+  },
+  "formations": [
+    {
+      "id": 1,
+      "name": "解说杯202510-202511",
+      "teams": [
+        {
+          "id": 1,
+          "name": "1队",
+          "color": "#dc3545",
+          "members": [
+            {
+              "id": 17,
+              "name": "Ning",
+              "position": "中单",
+              "level": "筑基",
+              "identity": "队员"
+            },
+            {
+              "id": 34,
+              "name": "Pyl",
+              "position": "辅助",
+              "level": "元婴",
+              "identity": "队长"
+            },
+            {
+              "id": 2,
+              "name": "米勒",
+              "position": "上单",
+              "level": "筑基",
+              "identity": "队员"
+            },
+            {
+              "id": 27,
+              "name": "Mage",
+              "position": "射手",
+              "level": "筑基",
+              "identity": "队员"
+            },
+            {
+              "id": 10,
+              "name": "友浩",
+              "position": "打野",
+              "level": "筑基",
+              "identity": "队员"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "name": "2队",
+          "color": "#0d6efd",
+          "members": [
+            {
+              "id": 13,
+              "name": "Fireloli",
+              "position": "打野",
+              "level": "元婴",
+              "identity": "队长"
+            },
+            {
+              "id": 16,
+              "name": "王淞",
+              "position": "中单",
+              "level": "筑基",
+              "identity": "队员"
+            },
+            {
+              "id": 5,
+              "name": "祥麟",
+              "position": "上单",
+              "level": "筑基",
+              "identity": "队员"
+            },
+            {
+              "id": 30,
+              "name": "周敢敢",
+              "position": "辅助",
+              "level": "筑基",
+              "identity": "队员"
+            },
+            {
+              "id": 25,
+              "name": "怀南",
+              "position": "射手",
+              "level": "筑基",
+              "identity": "队员"
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "name": "3队",
+          "color": "#198754",
+          "members": [
+            {
+              "id": 6,
+              "name": "Langx",
+              "position": "上单",
+              "level": "元婴",
+              "identity": "队长"
+            },
+            {
+              "id": 15,
+              "name": "乘风儿",
+              "position": "中单",
+              "level": "筑基",
+              "identity": "队员"
+            },
+            {
+              "id": 11,
+              "name": "张硕",
+              "position": "打野",
+              "level": "筑基",
+              "identity": "队员"
+            },
+            {
+              "id": 28,
+              "name": "雨凡",
+              "position": "射手",
+              "level": "筑基",
+              "identity": "队员"
+            },
+            {
+              "id": 31,
+              "name": "阿芙",
+              "position": "辅助",
+              "level": "筑基",
+              "identity": "队员"
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "name": "4队",
+          "color": "#fd7e14",
+          "members": [
+            {
+              "id": 7,
+              "name": "957",
+              "position": "上单",
+              "level": "元婴",
+              "identity": "队长"
+            },
+            {
+              "id": 22,
+              "name": "宝蓝",
+              "position": "射手",
+              "level": "筑基",
+              "identity": "队员"
+            },
+            {
+              "id": 9,
+              "name": "管泽元",
+              "position": "打野",
+              "level": "筑基",
+              "identity": "队员"
+            },
+            {
+              "id": 29,
+              "name": "十月",
+              "position": "辅助",
+              "level": "筑基",
+              "identity": "队员"
+            },
+            {
+              "id": 20,
+              "name": "Doby",
+              "position": "中单",
+              "level": "筑基",
+              "identity": "队员"
+            }
+          ]
+        },
+        {
+          "id": 5,
+          "name": "5队",
+          "color": "#6f42c1",
+          "members": [
+            {
+              "id": 21,
+              "name": "Xiye",
+              "position": "中单",
+              "level": "元婴",
+              "identity": "队长"
+            },
+            {
+              "id": 33,
+              "name": "Cryin",
+              "position": "辅助",
+              "level": "筑基",
+              "identity": "队员"
+            },
+            {
+              "id": 12,
+              "name": "乐乐",
+              "position": "打野",
+              "level": "筑基",
+              "identity": "队员"
+            },
+            {
+              "id": 4,
+              "name": "宸宇",
+              "position": "上单",
+              "level": "筑基",
+              "identity": "队员"
+            },
+            {
+              "id": 26,
+              "name": "瞳夕",
+              "position": "射手",
+              "level": "筑基",
+              "identity": "队员"
+            }
+          ]
+        },
+        {
+          "id": 6,
+          "name": "6队",
+          "color": "#20c997",
+          "members": [
+            {
+              "id": 14,
+              "name": "Hacker",
+              "position": "打野",
+              "level": "元婴",
+              "identity": "队长"
+            },
+            {
+              "id": 18,
+              "name": "小伞",
+              "position": "中单",
+              "level": "筑基",
+              "identity": "队员"
+            },
+            {
+              "id": 32,
+              "name": "Kinko",
+              "position": "辅助",
+              "level": "筑基",
+              "identity": "队员"
+            },
+            {
+              "id": 3,
+              "name": "呆呆",
+              "position": "上单",
+              "level": "筑基",
+              "identity": "队员"
+            },
+            {
+              "id": 24,
+              "name": "Suki",
+              "position": "射手",
+              "level": "筑基",
+              "identity": "队员"
+            }
+          ]
+        },
+        {
+          "id": 7,
+          "name": "7队",
+          "color": "#e83e8c",
+          "members": [
+            {
+              "id": 35,
+              "name": "Doinb",
+              "position": "辅助",
+              "level": "元婴",
+              "identity": "队长"
+            },
+            {
+              "id": 23,
+              "name": "毛毛",
+              "position": "射手",
+              "level": "筑基",
+              "identity": "队员"
+            },
+            {
+              "id": 19,
+              "name": "Zonic",
+              "position": "中单",
+              "level": "筑基",
+              "identity": "队员"
+            },
+            {
+              "id": 1,
+              "name": "小捏",
+              "position": "上单",
+              "level": "筑基",
+              "identity": "队员"
+            },
+            {
+              "id": 8,
+              "name": "赵俊日",
+              "position": "打野",
+              "level": "筑基",
+              "identity": "队员"
+            }
+          ]
+        }
+      ],
+      "playersByPosition": {
+        "上单": [],
+        "打野": [],
+        "中单": [],
+        "射手": [],
+        "辅助": []
+      },
+      "timestamp": "2025-10-18T12:37:26.225Z"
+    }
+  ],
+  "schedules": [],
+  "nextPlayerId": 36,
+  "nextTeamId": 8,
+  "nextFormationId": 2,
+  "nextScheduleId": 1,
+  "currentFormationId": 1
+}
